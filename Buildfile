@@ -12,6 +12,12 @@ define "stopwatch" do
   project.version = VERSION_NUMBER
   project.group = "org.alexboisvert"
   manifest["Implementation-Vendor"] = COPYRIGHT
-  
-  package(:jar)
+
+  define "core" do
+    package(:jar, :id => 'stopwatch')
+  end
+
+  define "web" do
+    package(:jar)
+  end
 end

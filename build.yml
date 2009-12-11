@@ -1,2 +1,3 @@
 # Uncomment for Scala 2.8
 #scala.test: 1.0.1-for-scala-2.8.0.Beta1-RC1-SNAPSHOT
+scala.test: 1.0.1-SNAPSHOT

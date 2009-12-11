@@ -22,7 +22,7 @@ import org.scalatest.matchers.ShouldMatchers
 import stopwatch.StopwatchFactory
 import stopwatch.StopwatchRange
 
-object StopwatchStatisticImplSuiteRunner extends StopwatchStatisticImplSuite {
+object StopwatchStatisticImplSuiteRunner {
   def main(args: Array[String]) = (new StopwatchStatisticImplSuite).execute
 }
 

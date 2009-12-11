@@ -22,7 +22,7 @@ import org.scalatest.matchers.ShouldMatchers
 import stopwatch.StopwatchFactory
 import stopwatch.StopwatchRange
 
-object StopwatchToStringRunner extends StopwatchToStringSuite {
+object StopwatchToStringSuiteRunner {
   def main(args: Array[String]) = (new StopwatchToStringSuite).execute
 }
 
@@ -54,6 +54,7 @@ class StopwatchToStringSuite extends FunSuite with ShouldMatchers {
     stats.notifyStop(now+700, 500)
 
     stats = stats.snapshot // force calc of stats
+    
     Console println stats.toShortString
     Console println stats.toMediumString
     Console println stats.toLongString

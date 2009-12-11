@@ -19,7 +19,7 @@ package stopwatch
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 
-object StopwatchSuiteRunner extends StopwatchSuite {
+object StopwatchSuiteRunner {
   def main(args: Array[String]) = (new StopwatchSuite).execute
 }
 
