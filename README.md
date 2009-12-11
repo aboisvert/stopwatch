@@ -27,18 +27,27 @@ application requests.
 ### Defining distribution intervals ###
 
     import stopwatch.Stopwatch
+    import stopwatch.StopwatchRange
 
     // somewhere in your code, before using the stopwatch
-    // distribution:  1s to 10s in 1s intervals
-    Stopwatch.init("test", 1000 to 10000 step 1000)
+    // distribution:  0s to 15s in 500ms intervals
+    Stopwatch.range = StopwatchRange(0, 15000, 500)
+
+### Resetting statistics ###
+
+    import stopwatch.Stopwatch
+
+    // somewhere in your code, before using the stopwatch
+    // distribution:  0s to 15s in 500ms intervals
+    Stopwatch.reset("test")
 
 ### Displaying statistics ###
     
     stats = Stopwatch.snapshot("test")
     Console.println(stats.toShortString)
     Console.println(stats.toMediumString) // includes thread info
-    Console.println(stats.toLongString) // includes threads + hit distribution
-    Console.println(stats) // defaults to medium string
+    Console.println(stats.toLongString)   // includes threads + hit distribution
+    Console.println(stats)                // defaults to medium string
     
 ### Target platform ###
 
@@ -51,4 +60,3 @@ Copyright (C) 2009-2010 by Alex Boisvert.
 
 Stopwatch is is licensed under the terms of the Apache Software License v2.0. 
 <http://www.apache.org/licenses/LICENSE-2.0.html>
-
