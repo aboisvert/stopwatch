@@ -1,0 +1,45 @@
+<html>
+  <body>
+    <p>Stopwatch API to easily monitor production applications.</p>
+
+    <p>This API can be used to determine application performance bottlenecks, user/application interactions, and application scalability. 
+     Each stopwatch gathers summary statistics such as hits, execution times (total, average, minimum, maximum, standard deviation), and simultaneous application requests.
+
+    <h4>Basic Usage</h4>
+    
+    <pre>
+    import stopwatch.Stopwatch
+    import stopwatch.StopwatchFactory
+    import stopwatch.StopwatchStats
+
+    Stopwatch("test") {
+      // code being timed
+    }
+    </pre>
+    
+    <h4>Usage for non-inlined code</h4>
+
+    <pre>
+    val stopwatch = Stopwatch.start("test" )
+
+    // and later, elsewhere in your code
+    stopwatch.stop()
+    
+    // or
+    Stopwatch.stop("test")
+    </pre>
+
+    <h4>Displaying statistics</h4>
+    
+    <pre>
+    // show statistics
+    stats = Stopwatch.snapshot("test")
+    Console.println(stats)
+    </pre>
+    
+    <dl>
+      <dt><b>Author: </b></dt><dd><a href="www.alexboisvert.org">&copy; Alex Boisvert</a></dd>
+    </dl>
+
+  </body>
+</html>
