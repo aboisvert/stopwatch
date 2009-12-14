@@ -17,7 +17,7 @@
 package stopwatch
 
 /**
- * A singleton factory to create stopwatches
+ * Default Stopwatch group to create stopwatches.
  */
 object Stopwatch extends StopwatchGroup("Stopwatch")
 

@@ -21,7 +21,9 @@ import stopwatch.impl.EnabledStopwatch
 import stopwatch.impl.StopwatchStatisticImpl
 
 /**
- * Stopwatch factory: used to initialize, start, dispose and reset stopwatches.
+ * Stopwatch group: used to initialize, start, dispose and reset stopwatches.
+ * <p>
+ * Stopwatches in the same group share the same distribution range.
  */
 class StopwatchGroup(val name: String) {
 
@@ -29,11 +31,12 @@ class StopwatchGroup(val name: String) {
   @volatile var enabled = false  // default to disabled
 
   /** Set to true if stopwatches are initialized implicitly when first used.
-   *  Otherwise, non-preinitialized stopwatches are considered disabled.
-   */
+   *  Otherwise, non-preinitialized stopwatches are considered disabled. */
   @volatile var enableOnDemand = true  // default to enabled
 
   /** Time statistics. */
+  // using j.u.c.ConcurrentHashMap because it performs better than any of the Scala collections
+  // under concurrency
   private var _stats = new java.util.concurrent.ConcurrentHashMap[String, StopwatchStatisticImpl]()  
 
   private var _intervals: Array[Long] = null
@@ -49,8 +52,8 @@ class StopwatchGroup(val name: String) {
    *    200-299 ms
    *    300-399 ms
    *    ... ...
-   *  29800-29899 ms 
-   *  29900-29999 ms 
+   *  29600-29799 ms
+   *  29800-29999 ms
    *  30000+
    * </code>
    */
