@@ -18,6 +18,16 @@ define "stopwatch" do
   end
 
   define "web" do
+    compile.with projects("core")
     package(:jar)
+    task "server" do
+      Java.java "stopwatch.web.TestServer",
+                :classpath => [ compile.dependencies, compile.target,
+                                test.compile.target, resources.target ]
+    end
   end
+
 end
+
+task "server" => "stopwatch:web:server"
+
