@@ -20,14 +20,6 @@ import stopwatch.impl.DisabledStopwatch
 import stopwatch.impl.EnabledStopwatch
 import stopwatch.impl.StopwatchStatisticImpl
 
-object StopwatchGroups {
-  @volatile
-  private[stopwatch] var _groups = Map[String, StopwatchGroup]()
-
-  /** Returns a map of all known stopwatch groups */
-  def groups: Iterator[StopwatchGroup] = _groups.values
-}
-
 /**
  * Stopwatch group: used to initialize, start, dispose and reset stopwatches.
  * <p>
@@ -50,8 +42,6 @@ class StopwatchGroup(val name: String) {
   private var _intervals: Array[Long] = null
 
   @volatile private var _listeners: List[String => Unit] = Nil
-
-  StopwatchGroups._groups += (name -> this)
 
   /**
    * Range for temporal hit distribution analysis.
@@ -78,7 +68,7 @@ class StopwatchGroup(val name: String) {
   }
 
   /** Return a named stopwatch */
-  private def get(name: String): Stopwatch = {
+  private[stopwatch] def get(name: String): Stopwatch = {
     if (!enabled) {
       return DisabledStopwatch
     }
@@ -128,11 +118,6 @@ class StopwatchGroup(val name: String) {
     _stats.keySet.toArray.toSeq.map  { x => x.asInstanceOf[StopwatchStatisticImpl].name }
   }
 
-  /** Dispose of this stopwatch group */
-  def dispose() = {
-    StopwatchGroups._groups -= name
-  }
-
   /** Dispose of a given stopwatch. */
   def dispose(name: String) = _stats.remove(name)
 
@@ -166,4 +151,13 @@ class StopwatchGroup(val name: String) {
 
   /** Notify all listeners that a Stopwatch has changed value */
   private[stopwatch] def notifyListeners(name: String) = _listeners.foreach { _(name) }
+
+  override def toString() = "StopwatchGroup('%s')".format(name)
+
+  override def equals(other: Any) = other match {
+    case other: StopwatchGroup => other.name == this.name
+    case _ => false
+  }
+
+  override def hashCode = name.hashCode
 }

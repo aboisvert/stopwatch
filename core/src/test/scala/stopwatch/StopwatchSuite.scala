@@ -1,15 +1,15 @@
 /*
  *  Copyright 2009-2010 Alex Boisvert
  *
- *  Licensed under the Apache License, Version 2.0 (the "License"); 
- *  you may not use this file except in compliance with the License. 
- *  You may obtain a copy of the License at 
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, 
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
@@ -48,7 +48,7 @@ class StopwatchSuite extends FunSuite with ShouldMatchers {
     }
     called should be === true
   }
-  
+
   test("Disabled factory should call closure") {
     val factory = new StopwatchGroup("test")
     factory.enabled = false
@@ -59,7 +59,7 @@ class StopwatchSuite extends FunSuite with ShouldMatchers {
     }
     called should be === true
   }
-  
+
   test("Statistic values after one use") {
     val factory = new StopwatchGroup("test")
     factory.enabled = true
@@ -69,30 +69,30 @@ class StopwatchSuite extends FunSuite with ShouldMatchers {
       Thread.sleep(10)
     }
     val end = System.currentTimeMillis
-    
+
     val stat = factory.snapshot("foo")
 
     stat.name should equal ("foo")
-    
-    stat.firstAccessTime match { 
+
+    stat.firstAccessTime match {
       case Some(time) => time should ((be >= start) and (be <= end))
       case _ => fail
     }
     stat.averageTime should be >= 10f
-    
+
     stat.standardDeviationTime should be === 0
-    
+
     stat.range should be === null
-    
+
     stat.distribution.length should be === 0
-    
+
     stat.currentThreads should be === 0
 
     stat.averageThreads should be === 1
 
     stat.maxThreads should be === 1
   }
- 
+
   test("Current threads, max threads and average threads") {
     val factory = new StopwatchGroup("test")
     factory.enabled = true
@@ -100,7 +100,7 @@ class StopwatchSuite extends FunSuite with ShouldMatchers {
     val s1 = factory.get("foo")
     val s2 = factory.get("foo")
     val s3 = factory.get("foo")
-    
+
     factory.snapshot("foo").currentThreads should be === 0
     s1.start()
     factory.snapshot("foo").currentThreads should be === 1
@@ -141,7 +141,7 @@ class StopwatchSuite extends FunSuite with ShouldMatchers {
       Thread.sleep(100)
     }
     factory.reset("foo")
-    
+
     val stat = factory.snapshot("foo")
     stat.name should equal ("foo")
     stat.firstAccessTime should equal (None)
@@ -165,15 +165,16 @@ class StopwatchSuite extends FunSuite with ShouldMatchers {
     factory.enabled = true
 
     var called = false
-    
+
     factory.addListener { name: String =>
       name should be === "foo"
       called = true
     }
-    
+
     factory("foo") {
       called should be === false
     }
     called should be === true
   }
+
 }
