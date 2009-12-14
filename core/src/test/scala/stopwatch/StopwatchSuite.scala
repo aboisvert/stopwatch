@@ -26,7 +26,7 @@ object StopwatchSuiteRunner {
 class StopwatchSuite extends FunSuite with ShouldMatchers {
 
   test("Default statistic values") {
-    val factory = new StopwatchFactory
+    val factory = new StopwatchGroup("test")
     factory.enabled = true
     val stat = factory.snapshot("foo")
     stat.name should equal ("foo")
@@ -39,7 +39,7 @@ class StopwatchSuite extends FunSuite with ShouldMatchers {
   }
 
   test("Enabled factory should call closure") {
-    val factory = new StopwatchFactory
+    val factory = new StopwatchGroup("test")
     factory.enabled = true
 
     var called = false
@@ -50,7 +50,7 @@ class StopwatchSuite extends FunSuite with ShouldMatchers {
   }
   
   test("Disabled factory should call closure") {
-    val factory = new StopwatchFactory
+    val factory = new StopwatchGroup("test")
     factory.enabled = false
 
     var called = false
@@ -61,7 +61,7 @@ class StopwatchSuite extends FunSuite with ShouldMatchers {
   }
   
   test("Statistic values after one use") {
-    val factory = new StopwatchFactory
+    val factory = new StopwatchGroup("test")
     factory.enabled = true
 
     val start = System.currentTimeMillis
@@ -94,7 +94,7 @@ class StopwatchSuite extends FunSuite with ShouldMatchers {
   }
  
   test("Current threads, max threads and average threads") {
-    val factory = new StopwatchFactory
+    val factory = new StopwatchGroup("test")
     factory.enabled = true
 
     val s1 = factory.get("foo")
@@ -131,7 +131,7 @@ class StopwatchSuite extends FunSuite with ShouldMatchers {
   }
 
   test("Values after reset()") {
-    val factory = new StopwatchFactory
+    val factory = new StopwatchGroup("test")
     factory.enabled = true
     factory.range = StopwatchRange(0, 200, 100)
     factory("foo") {
@@ -161,7 +161,7 @@ class StopwatchSuite extends FunSuite with ShouldMatchers {
   }
 
   test("Listeners") {
-    val factory = new StopwatchFactory
+    val factory = new StopwatchGroup("test")
     factory.enabled = true
 
     var called = false

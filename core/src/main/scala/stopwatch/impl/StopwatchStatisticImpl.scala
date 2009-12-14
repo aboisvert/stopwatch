@@ -16,14 +16,14 @@
 
 package stopwatch.impl
 
-import stopwatch.StopwatchFactory
+import stopwatch.StopwatchGroup
 import stopwatch.StopwatchRange
 import stopwatch.StopwatchStatistic
 
 /**
  * Time statistics for a stopwatch.
  */
-final class StopwatchStatisticImpl(val factory: StopwatchFactory, val name: String)
+final class StopwatchStatisticImpl(val factory: StopwatchGroup, val name: String)
   extends StopwatchStatistic 
   with Cloneable
 {

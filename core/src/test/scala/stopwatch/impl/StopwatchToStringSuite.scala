@@ -19,7 +19,7 @@ package stopwatch.impl
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 
-import stopwatch.StopwatchFactory
+import stopwatch.StopwatchGroup
 import stopwatch.StopwatchRange
 
 object StopwatchToStringSuiteRunner {
@@ -29,7 +29,7 @@ object StopwatchToStringSuiteRunner {
 class StopwatchToStringSuite extends FunSuite with ShouldMatchers {
   
   test("Stopwatch.toString and variants") {
-    val factory = new StopwatchFactory
+    val factory = new StopwatchGroup("test")
     factory.enabled = true
     factory.range = StopwatchRange(0, 300, 100)
     

@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package stopwatch;
+package stopwatch
 
 /**
  * A singleton factory to create stopwatches
  */
-object Stopwatch extends StopwatchFactory
+object Stopwatch extends StopwatchGroup("Stopwatch")
 
 /**
  * The stopwatch interface used to measure elapsed time and other performance metrics.

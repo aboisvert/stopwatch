@@ -19,7 +19,7 @@ package stopwatch.impl
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 
-import stopwatch.StopwatchFactory
+import stopwatch.StopwatchGroup
 import stopwatch.StopwatchRange
 
 object StopwatchStatisticImplSuiteRunner {
@@ -29,7 +29,7 @@ object StopwatchStatisticImplSuiteRunner {
 class StopwatchStatisticImplSuite extends FunSuite with ShouldMatchers {
 
   test("Distribution intervals") {
-    val factory = new StopwatchFactory
+    val factory = new StopwatchGroup("test")
     factory.enabled = true
     factory.range = StopwatchRange(0, 400, 100)
     
@@ -91,7 +91,7 @@ class StopwatchStatisticImplSuite extends FunSuite with ShouldMatchers {
   }
   
   test("Hits under range") {
-    val factory = new StopwatchFactory
+    val factory = new StopwatchGroup("test")
     factory.enabled = true
     factory.range = StopwatchRange(100, 400, 100)
     

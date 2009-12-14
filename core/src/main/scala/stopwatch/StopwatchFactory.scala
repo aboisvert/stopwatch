@@ -23,7 +23,7 @@ import stopwatch.impl.StopwatchStatisticImpl
 /**
  * Stopwatch factory: used to initialize, start, dispose and reset stopwatches.
  */
-class StopwatchFactory {
+class StopwatchGroup(val name: String) {
 
   /** True if stopwatch factory is enabled (i.e., issues real stopwatches) */
   @volatile var enabled = false  // default to disabled

@@ -17,7 +17,7 @@
 package stopwatch.impl
 
 import stopwatch.Stopwatch
-import stopwatch.StopwatchFactory
+import stopwatch.StopwatchGroup
 import stopwatch.StopwatchStatistic
 
 /**
@@ -38,6 +38,6 @@ class DisabledStopwatch
   def snapshot() = Statistic
   override def doWith[T](f: => T): T = f
   
-  val Statistic = new StopwatchStatisticImpl(new StopwatchFactory, "DISABLED")
+  val Statistic = new StopwatchStatisticImpl(new StopwatchGroup("DISABLED"), "DISABLED")
   
 }
