@@ -47,6 +47,8 @@ final class EnabledStopwatch(val name: String, private var _stats: StopwatchStat
     _start = 0
   }
 
+  val enabled = true
+
   override def hashCode = name.hashCode 
 
   override def equals(other: Any): Boolean = other match {

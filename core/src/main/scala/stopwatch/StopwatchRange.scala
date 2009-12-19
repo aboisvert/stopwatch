@@ -49,4 +49,7 @@ case class StopwatchRange(lowerBound: Long, higherBound: Long, step: Long) {
     l.toSeq
   }
 
+  /** Spread = higherBound-lowerBound */
+  def spread: Long = higherBound-lowerBound
+
 }

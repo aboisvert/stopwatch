@@ -32,6 +32,7 @@ class DisabledStopwatch
   extends Stopwatch
 {
   val name = "DISABLED"
+  val enabled = false
   def reset() = ()
   def start() = ()
   def stop() = ()
