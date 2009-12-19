@@ -114,9 +114,7 @@ class StopwatchGroup(val name: String) {
   def disable(name: String): Unit = ifStats(name, _.enabled = false, {})
 
   /** Get the list of known stopwatches. */
-  def names: Seq[String] = {
-    _stats.keySet.toArray.toSeq.map  { x => x.asInstanceOf[StopwatchStatisticImpl].name }
-  }
+  def names: Set[String] = _stats.keySet
 
   /** Dispose of a given stopwatch. */
   def dispose(name: String) = _stats.remove(name)
@@ -160,4 +158,10 @@ class StopwatchGroup(val name: String) {
   }
 
   override def hashCode = name.hashCode
+
+  implicit def javaToScala[T](set: java.util.Set[T]): Set[T] = {
+    var newSet = Set[T]()
+    set.toArray.foreach { x => newSet += x.asInstanceOf[T] }
+    newSet
+  }
 }
