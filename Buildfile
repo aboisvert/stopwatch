@@ -28,7 +28,7 @@ define "stopwatch" do
           "-javaagent:#{ENV['JREBEL_HOME']}/jrebel.jar"
 	       ]
       end
-      Java.java "stopwatch.web.Sample",
+      Java.java "stopwatch.web.SampleServer",
         :classpath => [ compile.dependencies, compile.target,
                         test.compile.target, resources.sources ],
         :java_args => java_args || []

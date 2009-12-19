@@ -20,14 +20,14 @@ import stopwatch.Stopwatch
 import stopwatch.StopwatchGroup
 import stopwatch.StopwatchRange
 
-/** Sample stopwatch server for demonstration/testing */
-object Sample {
+object SampleServer {
   def main(args: Array[String]) {
     val sample = new Sample()
     sample.main(args)
   }
 }
 
+/** Sample stopwatch server for demonstration/testing */
 class Sample {
   def main(args: Array[String]) {
     val server = new Server
@@ -72,9 +72,9 @@ class Sample {
       Stopwatch("bar") {
         Thread.sleep(random(300, 500))
       }
-      for (w <- words) {
-        group2(w) {
-          Thread.sleep(random(0, 100*i))
+      (words zipWithIndex) foreach { case (word, i) =>
+        group2(word) {
+          Thread.sleep(random(1, 100*(i+1)))
         }
       }
     }

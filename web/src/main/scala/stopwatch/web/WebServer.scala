@@ -76,10 +76,6 @@ class WebServer {
   
   val stopwatch = new StopwatchGroup(getClass().getName)
 
-  implicit private def functionToRunnable(f: => Unit) = new Runnable {
-    def run() = f
-  }
-  
   /** Start the server.  This method creates a new thread and returns. */
   def start() {
     if (_running) 
@@ -87,26 +83,29 @@ class WebServer {
 
     _running = true
     
-    val serverLoop = {
-      log.info("Stopwatch server running")
-      while (_running) {
-        try {
-          _serverSocket foreach { ss =>
-            val socket = ss.accept()
-            try {
-              socket.setSoTimeout(30000)
-              executor.execute { 
-                handleRequest(socket) 
+    val serverLoop = new Runnable {
+      def run = {
+        log.info("Stopwatch server running")
+        while (_running) {
+          try {
+            _serverSocket foreach { ss =>
+              Console println ("accept")
+              val socket = ss.accept()
+              try {
+                socket.setSoTimeout(30000)
+                executor.execute( new Runnable {
+                  def run = handleRequest(socket) 
+                })
+              } finally {
+                socket.close()
               }
-            } finally {
-              socket.close()
             }
+          } catch {
+            case e => e.printStackTrace
           }
-        } catch {
-          case e => e.printStackTrace
         }
+        log.info("Stopwatch server shutdown")
       }
-      log.info("Stopwatch server shutdown")
     }
 
     _serverSocket = Some(new ServerSocket(port))
@@ -309,7 +308,7 @@ class WebServer {
   }
   
   object SameThreadExecutor extends Executor {
-    def execute(r: Runnable) = r
+    def execute(r: Runnable) = r.run
   }
 }
 
