@@ -24,7 +24,9 @@ package stopwatch
 trait StopwatchStatistic {
 
   def name: String
-  
+
+  def enabled: Boolean
+
   /** Time when stopwatch was first accessed */
   def firstAccessTime: Option[Long]
 
