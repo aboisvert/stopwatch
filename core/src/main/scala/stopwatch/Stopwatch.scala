@@ -29,6 +29,9 @@ trait Stopwatch {
   /** Return the name of this stopwatch. */
   def name: String
 
+  /** Returns true if stopwatch is enabled */
+  def enabled: Boolean
+
   /** Start the stopwatch.  The stopwatch measures time until stop() is called. */
   def start(): Unit
 
