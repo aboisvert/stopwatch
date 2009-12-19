@@ -90,7 +90,9 @@ The {{Stopwatch}} object that has been used in the above examples is the default
 
 h2. Web Interface
 
-TODO
+!images/stopwatches-thumbnail.jpg!:images/stopwatches.png
+
+!images/distribution-thumbnail.jpg!:images/distribution.png
 
 h2. Target platform
 
