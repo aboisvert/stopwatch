@@ -1,0 +1,163 @@
+body {
+  margin: 0 30px;
+  padding: 10px 10px 10px 10px;
+  font-size: 90%;
+  font-family: arial, helvetica, sans-serif;
+  background-color: #eee;
+  color: #333;
+}
+
+#content {
+  float: left;
+  position: relative;
+  xleft: 50%;
+  width: 90%;
+}
+
+#content > div {
+  position: relative;
+  xleft: -50%;
+}
+
+#header {
+  width: 100%;
+  text-align: center;
+  background-color: #ddd;
+}
+#title {
+  font-size: 16pt;
+  font-weight: bold;
+  margin-right: 0px;
+}
+
+#stopwatches {
+  clear: both;
+  width: 90%;
+}
+
+#footer {
+  text-align: center
+}
+
+h3 {
+  margin-top: 25px;
+  margin-bottom: 15px;
+}
+
+.stopwatches {
+  clear: both;
+}
+
+.stopwatches table {
+  border: 0;
+}
+
+.stopwatches button {
+  margin: 2px 3px 2px 3px
+}
+
+.StopwatchGroup {
+  float: left;
+  font-size: 14pt;
+}
+
+.groupSwitch {
+  float: left;
+  margin-top: 26px;
+  margin-left: 10px;
+}
+
+table {
+  color: #333;
+  background-color: #FFF;
+}
+
+th {
+  text-align: center;
+  color: #333;
+  background-color: #bbb;
+  padding-left: 3px;
+  padding-right: 3px;
+  border-spacing: 1px;
+}
+
+tbody th
+{
+  font-weight: normal;
+}
+
+tbody {
+  text-align: center;
+}
+
+table td {
+  padding: 1px 4px 1px 4px;
+}
+
+tbody .odd {
+  background-color: #ddd;
+}
+
+
+/* root element for tabs  */
+ul.tabs { 
+  list-style:none; 
+  margin:0 !important; 
+  padding:0;  
+  border-bottom:1px solid #666;  
+  height:30px;
+}
+
+/* single tab */
+ul.tabs li { 
+  float: left;   
+  text-indent: 0;
+  padding-left: 2px;
+  margin: 0 !important;
+  list-style-image:none !important; 
+  border-right:1px solid #ddd;
+}
+
+/* link inside the tab. uses a background image */
+ul.tabs a { 
+  xbackground: url(/tools/img/tabs/blue.png) no-repeat -420px 0;
+  background-color: #666;
+  display: block;
+  height: 30px;  
+  line-height: 30px;
+  xwidth: 134px;
+  text-align:center;  
+  text-decoration:none;
+  color:#ddd;
+  padding: 0px;
+  padding-left: 8px;
+  padding-right: 8px;
+  margin:0px;  
+  position:relative;
+  top:1px;
+}
+
+ul.tabs a:active {
+  outline:none;    
+}
+
+/* when mouse enters the tab move the background image */
+ul.tabs a:hover {
+  background-position: -420px -31px;  
+  color:#fff;  
+}
+
+/* active tab uses a class name "current". it's highlight is also done by moving the background image. */
+ul.tabs a.current, ul.tabs a.current:hover, ul.tabs li.current a {
+  background-color: blue;
+  background-position: -420px -62px;    
+  cursor:default !important; 
+  color: white !important;
+  font-weight: bold;
+}
+
+/* initially all panes are hidden */ 
+div.panes div.pane {
+  display:none;    
+}
+
