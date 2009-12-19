@@ -5,23 +5,25 @@ title: Stopwatch
 
 h2. Monitor your production Scala applications.
 
-This API can be used to determine application performance bottlenecks,
-user/application interactions, and application scalability. Each stopwatch
-gathers summary statistics such as hits, execution times (total, average,
-minimum, maximum, standard deviation), distribution, and simultaneous
-requests or threads.
+This API can be used to determine application performance bottlenecks, user/application interactions, and application scalability. Each stopwatch gathers summary statistics such as hits, execution times (total, average, minimum, maximum, standard deviation), distribution, and simultaneous requests or threads.
 
 h2. Basic Usage
+
+h3. Critical Section
 
 {% highlight scala %}
 import stopwatch.Stopwatch
 
+// A stopwatch surrounds your code,
+// like a critical section
 Stopwatch("test") {
-// code being timed
+  // code being timed
+  doSomething()
+  somethingEvenLonger()
 }
 {% endhighlight %}
 
-h2. Usage for non-inlined code
+h3. Usage for non-inlined code
 
 {% highlight scala %}
 val stopwatch = Stopwatch.start("test")
@@ -30,7 +32,11 @@ val stopwatch = Stopwatch.start("test")
 stopwatch.stop()
 {% endhighlight %}
 
-h2. Defining distribution intervals
+This approach can also be used for languages other than Scala (e.g. Java) that may not be able to pass in a closure as second argument list.
+
+h3. Defining distribution range
+
+You can define a range on stopwatch groups (see below) to plot hit distribution graphs.
 
 {% highlight scala %}
 import stopwatch.Stopwatch
@@ -41,25 +47,50 @@ import stopwatch.StopwatchRange
 Stopwatch.range = StopwatchRange(0, 15000, 500)
 {% endhighlight %}
 
-h2. Resetting statistics
+h3. Resetting statistics
+
+You may programmatically reset the values of stopwatches if your application has multiple cycles or if you want to recalibrate after the JVM ("HotSpot compiler") has had time to optimize your code.
 
 {% highlight scala %}
 import stopwatch.Stopwatch
 
-// somewhere in your code, before using the stopwatch
-// distribution:  0s to 15s in 500ms intervals
 Stopwatch.reset("test")
 {% endhighlight %}
 
-h2. Displaying statistics
+h3. Displaying statistics
 
 {% highlight scala %}
-stats = Stopwatch.snapshot("test")
+val stats = Stopwatch.snapshot("test")
 Console.println(stats.toShortString)
 Console.println(stats.toMediumString) // includes thread info
 Console.println(stats.toLongString)   // includes threads + hit distribution
 Console.println(stats)                // defaults to medium string
 {% endhighlight %}
+
+h2. Advanced Use Cases
+
+h3. Grouping
+
+You can define multiple stopwatch groups, each having their own distribution range.   Groups are also useful for visual organization and to avoid name clashes.
+
+{% highlight scala %}
+import stopwatch.Stopwatch
+import stopwatch.StopwatchGroup
+
+val incomingRequests = new StopwatchGroup("Incoming Requests")
+incomingRequest.range = new StopwatchRange(0, 30000, 1000)
+
+incomingRequests(clientId) {
+  // code being timed
+  doStuffForClient()
+}
+{% endhighlight %}
+
+The {{Stopwatch}} object that has been used in the above examples is the default group.
+
+h2. Web Interface
+
+TODO
 
 h2. Target platform
 
