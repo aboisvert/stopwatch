@@ -20,14 +20,21 @@ define "stopwatch" do
   define "web" do
     compile.with projects("core")
     package(:jar)
-    task "server" do
-      Java.java "stopwatch.web.TestServer",
-                :classpath => [ compile.dependencies, compile.target,
-                                test.compile.target, resources.target ]
+
+    task "sample" do
+      if ENV["JREBEL_HOME"]
+        java_args = [
+          "-noverify",
+          "-javaagent:#{ENV['JREBEL_HOME']}/jrebel.jar"
+	       ]
+      end
+      Java.java "stopwatch.web.Sample",
+        :classpath => [ compile.dependencies, compile.target,
+                        test.compile.target, resources.sources ],
+        :java_args => java_args || []
     end
   end
-
 end
 
-task "server" => "stopwatch:web:server"
+task "sample" => "stopwatch:web:sample"
 
