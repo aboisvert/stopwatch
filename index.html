@@ -1,82 +1,73 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+---
+layout: default
+title: Stopwatch
+---
 
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+h2. Monitor your production Scala applications.
 
-	<title>aboisvert/stopwatch @ GitHub</title>
-	
-	<style type="text/css">
-		body {
-  		margin-top: 1.0em;
-  		background-color: #b66de1;
-		  font-family: "Helvetica,Arial,FreeSans"; 
-  		color: #000000;
-    }
-    #container {
-      margin: 0 auto;
-      width: 700px;
-    }
-		h1 { font-size: 3.8em; color: #49921e; margin-bottom: 3px; }
-		h1 .small { font-size: 0.4em; }
-		h1 a { text-decoration: none }
-		h2 { font-size: 1.5em; color: #49921e; }
-    h3 { text-align: center; color: #49921e; }
-    a { color: #49921e; }
-    .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
-    .download { float: right; }
-		pre { background: #000; color: #fff; padding: 15px;}
-    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
-    .footer { text-align:center; padding-top:30px; font-style: italic; }
-	</style>
-	
-</head>
+This API can be used to determine application performance bottlenecks,
+user/application interactions, and application scalability. Each stopwatch
+gathers summary statistics such as hits, execution times (total, average,
+minimum, maximum, standard deviation), distribution, and simultaneous
+requests or threads.
 
-<body>
-  <a href="http://github.com/aboisvert/stopwatch"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
-  
-  <div id="container">
+h2. Basic Usage
 
-    <div class="download">
-      <a href="http://github.com/aboisvert/stopwatch/zipball/master">
-        <img border="0" width="90" src="http://github.com/images/modules/download/zip.png"></a>
-      <a href="http://github.com/aboisvert/stopwatch/tarball/master">
-        <img border="0" width="90" src="http://github.com/images/modules/download/tar.png"></a>
-    </div>
-      
-    <h1><a href="http://github.com/aboisvert/stopwatch">stopwatch</a> 
-      <span class="small">by <a href="http://github.com/aboisvert">aboisvert</a></span></h1>
+{% highlight scala %}
+import stopwatch.Stopwatch
 
-    <div class="description">
-      Stopwatch API to easily monitor production Scala applications
-    </div>
+Stopwatch("test") {
+// code being timed
+}
+{% endhighlight %}
 
-    <h2>License</h2>
-<p>Apache Software License v2.0</p>
-<h2>Authors</h2>
-<p>Alex Boisvert (alex.boisvert@gmail.com)<br/><br/>      </p>
-<h2>Contact</h2>
-<p>Alex Boisvert (alex.boisvert@gmail.com)<br/>      </p>
+h2. Usage for non-inlined code
 
+{% highlight scala %}
+val stopwatch = Stopwatch.start("test")
 
-    <h2>Download</h2>
-    <p>
-      You can download this project in either
-      <a href="http://github.com/aboisvert/stopwatch/zipball/master">zip</a> or
-      <a href="http://github.com/aboisvert/stopwatch/tarball/master">tar</a> formats.
-    </p>
-    <p>You can also clone the project with <a href="http://git-scm.com">Git</a>
-      by running:
-      <pre>$ git clone git://github.com/aboisvert/stopwatch</pre>
-    </p>
-      
-    <div class="footer">
-      get the source code on GitHub : <a href="http://github.com/aboisvert/stopwatch">aboisvert/stopwatch</a>
-    </div>
-    
-  </div>
+// and later, elsewhere in your code
+stopwatch.stop()
+{% endhighlight %}
 
-  
-</body>
-</html>
+h2. Defining distribution intervals
+
+{% highlight scala %}
+import stopwatch.Stopwatch
+import stopwatch.StopwatchRange
+
+// somewhere in your code, before using the stopwatch
+// distribution:  0s to 15s in 500ms intervals
+Stopwatch.range = StopwatchRange(0, 15000, 500)
+{% endhighlight %}
+
+h2. Resetting statistics
+
+{% highlight scala %}
+import stopwatch.Stopwatch
+
+// somewhere in your code, before using the stopwatch
+// distribution:  0s to 15s in 500ms intervals
+Stopwatch.reset("test")
+{% endhighlight %}
+
+h2. Displaying statistics
+
+{% highlight scala %}
+stats = Stopwatch.snapshot("test")
+Console.println(stats.toShortString)
+Console.println(stats.toMediumString) // includes thread info
+Console.println(stats.toLongString)   // includes threads + hit distribution
+Console.println(stats)                // defaults to medium string
+{% endhighlight %}
+
+h2. Target platform
+
+* Scala 2.7.4+ / 2.8+  (source compatible)
+* JVM 1.5+
+
+h2. License
+
+Copyright (C) 2009-2010 by Alex Boisvert.
+
+Stopwatch is is licensed under the terms of the "Apache Software License v2.0":http://www.apache.org/licenses/LICENSE-2.0.html
