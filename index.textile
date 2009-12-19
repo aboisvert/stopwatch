@@ -25,6 +25,8 @@ Stopwatch("test") {
 
 h3. Usage for non-inlined code
 
+Sometimes you want to measure the performance of an operation which is not emcompassed by a single code section.  You can then use the @start@ and @stop@ methods to delimit the scope of the operation.
+
 {% highlight scala %}
 val stopwatch = Stopwatch.start("test")
 
@@ -32,11 +34,11 @@ val stopwatch = Stopwatch.start("test")
 stopwatch.stop()
 {% endhighlight %}
 
-This approach can also be used for languages other than Scala (e.g. Java) that may not be able to pass in a closure as second argument list.
+This approach can also be used for languages other than Scala (e.g. Java) that may not be able to pass in a Scala closure as second argument list.
 
-h3. Defining distribution range
+h3. Distribution Range
 
-You can define a range on stopwatch groups (see below) to plot hit distribution graphs.
+You can define a range on stopwatch groups (see below) to plot execution time distribution graphs.
 
 {% highlight scala %}
 import stopwatch.Stopwatch
@@ -78,7 +80,7 @@ import stopwatch.Stopwatch
 import stopwatch.StopwatchGroup
 
 val incomingRequests = new StopwatchGroup("Incoming Requests")
-incomingRequest.range = new StopwatchRange(0, 30000, 1000)
+incomingRequest.range = StopwatchRange(0, 30000, 1000)
 
 incomingRequests(clientId) {
   // code being timed
@@ -86,13 +88,22 @@ incomingRequests(clientId) {
 }
 {% endhighlight %}
 
-The {{Stopwatch}} object that has been used in the above examples is the default group.
+The singleton @Stopwatch@ object that has been used in the above examples is the default group.
 
 h2. Web Interface
 
 !images/stopwatches-thumbnail.jpg!:images/stopwatches.png
 
 !images/distribution-thumbnail.jpg!:images/distribution.png
+
+h3. TODO's
+
+* Improve web UI
+* Use System.nanoTime() instead of System.currentTimeMillis() to measure lapsed time
+* Add Stopwatch.error() method to measure errors and exceptions for operations and code blocks
+* Add doc section detailing performance
+* Add reset button(s) on web UI
+* Prettify the distribution graph.  Colors are ugly.
 
 h2. Target platform
 
