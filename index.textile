@@ -43,10 +43,11 @@ You can define a range on stopwatch groups (see below) to plot execution time di
 {% highlight scala %}
 import stopwatch.Stopwatch
 import stopwatch.StopwatchRange
+import stopwatch.TimeUnit._
 
 // somewhere in your code, before using the stopwatch
 // distribution:  0s to 15s in 500ms intervals
-Stopwatch.range = StopwatchRange(0, 15000, 500)
+Stopwatch.range = StopwatchRange(0 millis, 15000 millis, 500 millis)
 {% endhighlight %}
 
 h3. Resetting statistics
@@ -78,9 +79,10 @@ You can define multiple stopwatch groups, each having their own distribution ran
 {% highlight scala %}
 import stopwatch.Stopwatch
 import stopwatch.StopwatchGroup
+import stopwatch.TimeUnit._
 
 val incomingRequests = new StopwatchGroup("Incoming Requests")
-incomingRequest.range = StopwatchRange(0, 30000, 1000)
+incomingRequest.range = StopwatchRange(0 millis, 30000 millis, 1000 millis)
 
 incomingRequests(clientId) {
   // code being timed
@@ -99,7 +101,6 @@ h2. Web Interface
 h3. TODO's
 
 * Improve web UI
-* Use System.nanoTime() instead of System.currentTimeMillis() to measure lapsed time
 * Add Stopwatch.error() method to measure errors and exceptions for operations and code blocks
 * Add doc section detailing performance
 * Add reset button(s) on web UI
