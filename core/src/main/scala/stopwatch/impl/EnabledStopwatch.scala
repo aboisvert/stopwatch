@@ -29,22 +29,16 @@ final class EnabledStopwatch(val name: String, private var _stats: StopwatchStat
 
   // implement Stopwatch
   def start() {
-    if (_start != 0) {
-      throw new IllegalStateException("Stopwatch already started:" + _stats.name)
-    }
     val currentTime = System.currentTimeMillis
-    _start = currentTime
     _stats.notifyStart(currentTime)
+    _start = System.nanoTime
   }
 
   def stop() {
-    if (_start == 0) {
-      throw new IllegalStateException("Stopwatch not started: " + _stats.name)
-    }
+    val end = System.nanoTime
     val currentTime = System.currentTimeMillis
-    val elapsed = currentTime - _start
+    val elapsed = end - _start
     _stats.notifyStop(currentTime, elapsed)
-    _start = 0
   }
 
   val enabled = true

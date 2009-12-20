@@ -20,6 +20,7 @@ import stopwatch.Stopwatch
 import stopwatch.StopwatchGroup
 import stopwatch.StopwatchRange
 import stopwatch.StopwatchStatistic
+import stopwatch.TimeUnit
 
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
@@ -39,7 +40,7 @@ import scala.xml._
  */
 class Server extends WebServer with ResourceHandler {
   import HttpUtils._
-  
+
   handlers = List(this)
 
   var groups = List[StopwatchGroup]()
@@ -74,8 +75,8 @@ class Server extends WebServer with ResourceHandler {
       if (f isDefinedAt request.path) Some(f(request.path))
       else None
     }
-    
-    val group = resource { case List("group", name, _*) => name } 
+
+    val group = resource { case List("group", name, _*) => name }
     val stopwatch = resource { case List("group", _, "stopwatch", name) => name }
     val action = field("action")
 
@@ -108,10 +109,10 @@ class Server extends WebServer with ResourceHandler {
         sendError(500, "Missing action")
     }
   }
-  
+
   def serveStopwatches() {
     import HttpContext.{request, response}
-    
+
     response.status = 200
     response.contentType = "text/html"
 
@@ -133,8 +134,8 @@ class Server extends WebServer with ResourceHandler {
         function applyStyles() {
           // apply jQuery table colorize styling
           $('.stopwatches').colorize();
-  
-          // setup ul.tabs to work as tabs for each div directly under div.panes 
+
+          // setup ul.tabs to work as tabs for each div directly under div.panes
           //$('ul.tabs').tabs('div.panes > div', {effect: 'fade', fadeOutSpeed: 400});
 
           /* Inline sparklines take their values from the contents of the tag */
@@ -142,8 +143,8 @@ class Server extends WebServer with ResourceHandler {
 
           // apply jQuery checkbox styling
           $('input:checkbox').checkbox();
-  
-          // stopwatch group on/off switches 
+
+          // stopwatch group on/off switches
           $('.groupSwitch input:checkbox').bind('click', function(e) {
             var action = this.checked ? 'disableGroup' : 'enableGroup'
             var group = this.name
@@ -151,7 +152,7 @@ class Server extends WebServer with ResourceHandler {
             jQuery.post('/group/'+group, {action: action});
           });
 
-          // individual stopwatch on/off switches 
+          // individual stopwatch on/off switches
           $('.stopwatchSwitch input:checkbox').bind('click', function(e) {
             var action = this.checked ? 'disableStopwatch' : 'enableStopwatch'
             var re = new RegExp('(.*)~(.*)');
@@ -161,20 +162,20 @@ class Server extends WebServer with ResourceHandler {
             // alert('click '+action+' '+group+' '+stopwatch);
             jQuery.post('/group/'+group+'/stopwatch/'+stopwatch, {action: action});
           });
-          		
+
         }
-        		
+
         $(document).ready(function() { applyStyles(); } );
-            
+
         $(document).everyTime(5000, function(i) {
           /* group tabs don't work yet
           alert("load");
           $.get("/", function(data) {
             $(".groupReplace").each(function (d) {
-              alert("data "+data) 
-              alert("source "+this.id) 
-            	alert("replace "+$("#"+this.id, data).id)	
-            	$(d).insertAfter( $("#"+this.id, data) )	
+              alert("data "+data)
+              alert("source "+this.id)
+              alert("replace "+$("#"+this.id, data).id)
+              $(d).insertAfter( $("#"+this.id, data) )
               $(d).replaceWith( $("#"+this.id, data) );
             });
           }, "html");
@@ -187,8 +188,8 @@ class Server extends WebServer with ResourceHandler {
           $("#stopwatches").load("/ #stopwatches", function() {
             applyStyles();
           });
-        });    
-     		""") }
+        });
+         """) }
         </script>
       </head>
       <body> {
@@ -204,7 +205,7 @@ class Server extends WebServer with ResourceHandler {
             <div/> ++
             /* group tabs don't work yet
             <ul class="tabs"> { sortedGroups map { g =>
-              <li><a href="#">{g.name}</a></li> 
+              <li><a href="#">{g.name}</a></li>
             } } </ul>
             */
             <div class="panes"> {
@@ -212,20 +213,20 @@ class Server extends WebServer with ResourceHandler {
                 <div class="groupReplace" id={id(g.name)}>
                   <h3 class="StopwatchGroup"> {g.name} </h3>
                   <span class="groupSwitch">
-                    <input type="checkbox" name={g.name} 
+                    <input type="checkbox" name={g.name}
                            checked={if (g.enabled) "checked" else null}/>
                   </span>
-                  <table class="stopwatches"> 
+                  <table class="stopwatches">
                     { headers(g) ++ <tbody> { rows(g) } </tbody> }
                   </table>
                 </div>
-              } 
+              }
             } </div>
           } </div>
 
           <div id="footer" class="last">
             <br/>
-            <a href="http://github.com/aboisvert/stopwatch">Stopwatch</a> is Copyright (C) 2009-2010, by Alex Boisvert 
+            <a href="http://github.com/aboisvert/stopwatch">Stopwatch</a> is Copyright (C) 2009-2010, by Alex Boisvert
             <br/>
           </div>
 
@@ -262,10 +263,10 @@ class Server extends WebServer with ResourceHandler {
         <th scope="col">Max</th>
         <th scope="col" class="odd">First</th>
         <th scope="col">Last</th>
-      </tr>      
+      </tr>
     </thead>
   }
-  
+
   def rows(group: StopwatchGroup) = {
     var i = 1
     group.names.toList.sort(_ < _).map { name: String =>
@@ -274,7 +275,7 @@ class Server extends WebServer with ResourceHandler {
       row(i, group, snapshot)
     }
   }
-  
+
   def row(i: Int, g: StopwatchGroup, s: StopwatchStatistic) = {
     val dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
     val delta = for {
@@ -293,15 +294,19 @@ class Server extends WebServer with ResourceHandler {
 
     def encode(s: String) = urlEncode(s).replaceAll("/", "%2F")
 
+    implicit def timeToLong(t: TimeUnit) = t.toNanos
+
+    val millis = 1000000
+
     <tr class={if (i%2==1) "odd" else "even"}> {
       <th scope="row">{s.name}</th> ++
       <td>{s.hits}</td> ++
       <td>{throughput}</td> ++
-      <td>{s.minTime}</td> ++
-      <td>{s.averageTime}</td> ++
-      <td>{s.maxTime}</td> ++
-      <td>{s.totalTime}</td> ++
-      <td>{s.standardDeviationTime}</td> ++
+      <td>{s.minTime/millis}</td> ++
+      <td>{s.averageTime/millis}</td> ++
+      <td>{s.maxTime/millis}</td> ++
+      <td>{s.totalTime/millis}</td> ++
+      <td>{s.standardDeviationTime/millis}</td> ++
       <td>{s.currentThreads}</td> ++
       <td>{s.averageThreads}</td> ++
       <td>{s.maxThreads}</td> ++
@@ -316,8 +321,8 @@ class Server extends WebServer with ResourceHandler {
                 StopwatchRange(low, high, (high-low)/20)
               }
               val newDist = (
-                s.hitsUnderRange :: 
-                RangeUtils.rescale(s.range, newRange, s.distribution) 
+                s.hitsUnderRange ::
+                RangeUtils.rescale(s.range, newRange, s.distribution)
                 ::: List(s.hitsOverRange)
               )
               newDist mkString ","
@@ -326,16 +331,16 @@ class Server extends WebServer with ResourceHandler {
         } else NodeSeq.Empty } ++
       <td>
         <div class="stopwatchSwitch">
-          <input type="checkbox" name={g.name+"~"+s.name} 
+          <input type="checkbox" name={g.name+"~"+s.name}
                  checked={if (s.enabled) "checked" else null}/>
         </div>
       </td>
     } </tr>
   }
-  
+
   def distribution(group: String, stopwatch: String) {
     import HttpContext.{request, response}
-    
+
     response.status = 200
     response.contentType = "text/html"
 
@@ -343,18 +348,19 @@ class Server extends WebServer with ResourceHandler {
       val s = group.snapshot(stopwatch)
 
       import s._
+      implicit def timeToLong(t: TimeUnit) = t.toNanos
 
-      val step = (range.higherBound - range.lowerBound) / 10 
-      val xmin = range.lowerBound - step
-      val xmax = range.higherBound + step
-      val r = xmin to xmax by range.step
+      val step = (range.higherBound - range.lowerBound) / 10
+      val xmin: Long = range.lowerBound - step
+      val xmax: Long = range.higherBound + step
+      val r = xmin to xmax by (range.step: Long)
       val data = {
         // var data = [[0,5],[1,2], [2,3], [3,4], [4,5]];
-        List((xmin, s.hitsUnderRange)) ::: 
-        ( s.distribution.toList.zipWithIndex 
+        List((xmin, s.hitsUnderRange)) :::
+        ( s.distribution.toList.zipWithIndex
             map { case (hits, i) => (range.lowerBound+(i*range.step), hits) }
         ) ::: List((xmax, s.hitsOverRange)) map {
-          case (hits, x) => "[%d,%d]".format(hits, x) 
+          case (hits, x) => "[%d,%d]".format(hits, x)
         } mkString ","
       }
       val xticks = {
@@ -362,7 +368,7 @@ class Server extends WebServer with ResourceHandler {
         val max = range.higherBound
         // var ticks = [[0,"Under"],[100,11], [200,22], [300,33], [400,"Over"]];
         List((xmin, "Under")) :::
-        ((min to max by (step)).toList.map { x => (x, x.toString) }) :::
+        range.toList.map { x => (x, x.toString) } :::
         List((xmax, "Over")) map {
           case (x, s) => """[%d,"%s"]""".format(x,s)
         } mkString ","
@@ -370,7 +376,7 @@ class Server extends WebServer with ResourceHandler {
       val ymin = 0
       val ymax = ((s.distribution.max+10)/10*10) // we want multiple of 10
       val yticks = 0L to ymax by (ymax/10) mkString ("[", ",", "]")
-          
+
       val xhtml = <html>
         <head>
           <title>{"Distribution: "+stopwatch}</title>
@@ -384,7 +390,7 @@ class Server extends WebServer with ResourceHandler {
            function applyStyles() {
               $.plot($("#placeholder"), [
               {
-              	label: "Hits / Interval",	
+                label: "Hits / Interval",
                 data: [$data],
                 bars: { show: true }
               }], {
@@ -401,16 +407,16 @@ class Server extends WebServer with ResourceHandler {
                 },
               });
             }
-              
+
             $(document).ready(function() { applyStyles(); } );
-                
+
             /*
             $(document).everyTime(5000, function(i) {
               $("#stopwatches").load("/ #stopwatches", function() {
                 applyStyles();
               });
             });
-            */        
+            */
           """) }
           </script>
         </head>
@@ -430,16 +436,18 @@ class Server extends WebServer with ResourceHandler {
         .replaceFirst("""\$ymin""", ymin.toString)
         .replaceFirst("""\$ymax""", ymax.toString)
       )
-      
+
       response.content = result
     }
   }
 }
 
 private[web] object RangeUtils {
-  
-  /** Re-scale: Convert distribution values from one range to another range. */ 
+
+  /** Re-scale: Convert distribution values from one range to another range. */
   def rescale(from: StopwatchRange, to: StopwatchRange, values: Seq[Long]): List[Long] = {
+    implicit def timeToLong(t: TimeUnit) = t.toNanos
+
     def hitsBetween(low: Long, high: Long): Long = {
       val start = from.interval(low) max 0
       val end = from.interval(high-1) min ((from.spread/from.step).toInt-1)
@@ -454,11 +462,11 @@ private[web] object RangeUtils {
     }
 
     var result = List[Long]()
-    var i = to.lowerBound
+    var i: Long = to.lowerBound
     while (i < to.higherBound) {
       val hits = hitsBetween(i, i+to.step)
       result ::= hits
-      i += to.step
+      i += (to.step: Long)
     }
     result.reverse
   }

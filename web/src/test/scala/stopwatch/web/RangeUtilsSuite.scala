@@ -19,6 +19,7 @@ package stopwatch.web
 import stopwatch.Stopwatch
 import stopwatch.StopwatchGroup
 import stopwatch.StopwatchRange
+import stopwatch.TimeUnit._
 
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
@@ -30,15 +31,15 @@ object RangeUtilsSuiteRunner {
 class RangeUtilsSuite extends FunSuite with ShouldMatchers {
 
   test("identity rescale") {
-    val r1 = StopwatchRange(0, 100, 10)
-    val r2 = StopwatchRange(0, 100, 10)
+    val r1 = StopwatchRange(0 millis, 100 millis, 10 millis)
+    val r2 = StopwatchRange(0 millis, 100 millis, 10 millis)
     val values = List[Long](0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
     RangeUtils.rescale(r1, r2, values) should be === values
   }
 
   test("0-200:100 to 0-100:10") {
-    val r1 = StopwatchRange(0, 200, 100)
-    val r2 = StopwatchRange(0, 100, 10)
+    val r1 = StopwatchRange(0 millis, 200 millis, 100 millis)
+    val r2 = StopwatchRange(0 millis, 100 millis, 10 millis)
     val values = List[Long](1,2)
     RangeUtils.rescale(r1, r2, values) should be === (
       List(1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
@@ -46,8 +47,8 @@ class RangeUtilsSuite extends FunSuite with ShouldMatchers {
   }
 
   test("0:200:100 to 0:200:20") {
-    val r1 = StopwatchRange(0, 200, 100)
-    val r2 = StopwatchRange(0, 200, 20)
+    val r1 = StopwatchRange(0 millis, 200 millis, 100 millis)
+    val r2 = StopwatchRange(0 millis, 200 millis, 20 millis)
     val values = List[Long](1,2)
     RangeUtils.rescale(r1, r2, values) should be === (
       List(1, 1, 1, 1, 1, 2, 2, 2, 2, 2)

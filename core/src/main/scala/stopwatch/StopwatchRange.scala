@@ -19,37 +19,54 @@ package stopwatch
 /**
  * Range of stopwatch hit distribution.
  */
-case class StopwatchRange(lowerBound: Long, higherBound: Long, step: Long) {
-  /** Returns number of range intervals */
-  def intervals: Int = (higherBound-lowerBound) / step toInt
+case class StopwatchRange(lowerBound: TimeUnit, higherBound: TimeUnit, step: TimeUnit) {
+  private val _low = lowerBound.toNanos
+  private val _high = higherBound.toNanos
+  private val _step = step.toNanos
 
-  /** Returns which interval a value falls into.  (Does not perform range checking) */
+  /** Returns number of range intervals */
+  def intervals: Int = (_high-_low) / _step toInt
+
+  /** Returns which interval a value (in nanos) falls into.  Does not perform range checking. */
   def interval(x: Long): Int = {
-    if (x < lowerBound) (x-lowerBound-step) / step toInt
-    else (x-lowerBound) / step toInt
+    if (x < _low) (x-_low-_step) / _step toInt
+    else (x-_low) / _step toInt
   }
 
-  /** Returns a sequence of tuples (lowerBound, upperBounds) for each interval.
+  /** Returns which interval a value falls into.  Does not perform range checking. */
+  def interval(x: TimeUnit): Int = interval(x.toNanos)
+
+  /** Returns a sequence of tuples (lowerBound, upperBounds) for each interval (in nanos).
    *  e.g.,
-   *       (  "0",   "999")
-   *       ("1000", "1999")
-   *       ("2000", "2999")
-   *       ("3000", "3999")
-   *       ("4000", "4999")
+   *       (  0,   999)
+   *       (1000, 1999)
+   *       (2000, 2999)
+   *       (3000, 3999)
+   *       (4000, 4999)
    */
   def intervalsAsTuple: Seq[(Long, Long)] = {
     var i = 0
-    var max = intervals
-    var l = new Array[(Long, Long)](intervals)
-    while (i < intervals) {
-      val lower = lowerBound + (i*step)
-      l(i) = (lower, lower + step)
+    val max = intervals
+    var l = new Array[(Long, Long)](max)
+    while (i < max) {
+      val lower = _low + (i*_step)
+      l(i) = (lower, lower + _step)
       i += 1
     }
     l.toSeq
   }
 
-  /** Spread = higherBound-lowerBound */
-  def spread: Long = higherBound-lowerBound
+  /** Spread = higherBound-lowerBound (in nanos) */
+  def spread: Long = _high-_low
 
+  def toList: List[Long] = {
+    val max = intervals
+    var l = List[Long]()
+    var n = 0L
+    while (n < max) {
+      l ::= n
+      n += _step
+    }
+    l.reverse
+  }
 }

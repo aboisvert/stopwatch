@@ -21,6 +21,7 @@ import org.scalatest.matchers.ShouldMatchers
 
 import stopwatch.StopwatchGroup
 import stopwatch.StopwatchRange
+import stopwatch.TimeUnit._
 
 object StopwatchToStringSuiteRunner {
   def main(args: Array[String]) = (new StopwatchToStringSuite).execute
@@ -31,7 +32,7 @@ class StopwatchToStringSuite extends FunSuite with ShouldMatchers {
   test("Stopwatch.toString and variants") {
     val factory = new StopwatchGroup("test")
     factory.enabled = true
-    factory.range = StopwatchRange(0, 300, 100)
+    factory.range = StopwatchRange(0 millis, 300 millis, 100 millis)
     
     val now = System.currentTimeMillis()
     var stats = factory.snapshot("foo").asInstanceOf[stopwatch.impl.StopwatchStatisticImpl]

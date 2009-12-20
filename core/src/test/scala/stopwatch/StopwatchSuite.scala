@@ -19,11 +19,14 @@ package stopwatch
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 
+import stopwatch.TimeUnit._
+
 object StopwatchSuiteRunner {
   def main(args: Array[String]) = (new StopwatchSuite).execute
 }
 
 class StopwatchSuite extends FunSuite with ShouldMatchers {
+  implicit def timeToNanos(t: TimeUnit) = t.toNanos
 
   test("Default statistic values") {
     val factory = new StopwatchGroup("test")
@@ -78,7 +81,7 @@ class StopwatchSuite extends FunSuite with ShouldMatchers {
       case Some(time) => time should ((be >= start) and (be <= end))
       case _ => fail
     }
-    stat.averageTime should be >= 10f
+    stat.averageTime should be >= (10 millis: Long)
 
     stat.standardDeviationTime should be === 0
 
@@ -125,7 +128,7 @@ class StopwatchSuite extends FunSuite with ShouldMatchers {
     val stat = factory.snapshot("foo")
     stat.averageThreads should be >= 1f
     stat.minTime should be >= 10L
-    stat.averageTime should be >= 10f
+    stat.averageTime should be >= 10L
     stat.maxTime should be >= 10L
     stat.totalTime should be >= 30L
   }
@@ -133,7 +136,7 @@ class StopwatchSuite extends FunSuite with ShouldMatchers {
   test("Values after reset()") {
     val factory = new StopwatchGroup("test")
     factory.enabled = true
-    factory.range = StopwatchRange(0, 200, 100)
+    factory.range = StopwatchRange(0 millis, 200 millis, 100 millis)
     factory("foo") {
       Thread.sleep(10)
     }

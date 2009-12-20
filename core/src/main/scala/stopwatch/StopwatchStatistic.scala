@@ -37,17 +37,17 @@ trait StopwatchStatistic {
   def hits: Long
 
   /** Returns the average amount of time taken to complete one invocation of
-   *  this operation since the beginning of this measurement.
+   *  this operation since the beginning of this measurement (in nanoseconds).
    */
-  def averageTime: Float
+  def averageTime: Long
 
-  /** Returns the total amount of time spent by threads inside the stopwatch. */
+  /** Returns the total amount of time spent by threads inside the stopwatch (in nanoseconds). */
   def totalTime: Long
 
-  /** Returns the minimum amount of time spent by any given thread inside the stopwatch. */
+  /** Returns the minimum amount of time spent by any given thread inside the stopwatch (in nanoseconds). */
   def minTime: Long
 
-  /** Returns the maximum amount of time spent by any given thread inside the stopwatch. */
+  /** Returns the maximum amount of time spent by any given thread inside the stopwatch (in nanoseconds). */
   def maxTime: Long
 
   /** Returns the range used for hit distribution */
@@ -62,7 +62,7 @@ trait StopwatchStatistic {
   /** Returns the number of hits over range. */
   def hitsOverRange: Long
 
-  /** Returns the standard deviation of time for each event. */
+  /** Returns the standard deviation of time for each event (in nanoseconds). */
   def standardDeviationTime: Long
 
   /** Returns current number of threads inside the stopwatch section */
