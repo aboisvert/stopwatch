@@ -69,7 +69,7 @@ h3. Enabling and disabling
 
 There are 3 ways to manage if and how stopwatches are enabled.
 
-1) At the group level
+*1) At the group level*
 
 As we have seen above, you can enable/disable stopwatches at the group level,
 
@@ -83,7 +83,7 @@ myStopwatchGroup.enabled = false
 
 By default, groups are disabled.  You must explicitly enable them to monitor your application.   Also, the group's @enabled@ property overrides stopwatches' @enabled@ property (see below).
 
-2) "On demand"
+*2) "On demand"*
 
 If a group is enabled and a new stopwatch name is used, the @enableOnDemand@ property controls whether the new stopwatch is automatically enabled,
 
@@ -101,7 +101,7 @@ myStopwatchGroup.enable("someCode")
 
 Otherwise, non-preinitialized stopwatches are disabled by default.  If @enableOnDemand@ is @false@, you must explicitly enable stopwatches (see below).
 
-3) Individual stopwatches
+*3) Individual stopwatches*
 
 In addition to enabling/disabling at the group level, you can also enable and disable individual stopwatches explicitly,
 
@@ -146,34 +146,68 @@ h3. Displaying statistics
 The "low-tech" way to display statistics is to use one of the @toString@ methods: @toShortString@, @toMediumString@, @toLongString@.  This can be useful if you want to log statistics directly to the @Console@ or through an existing logging frameworks, such as Log4J.
 
 {% highlight scala %}
-
 scala> val stats = Stopwatch.snapshot("test")
 
 // summary only
 scala> s.toShortString
 res3: String = Stopwatch "test" {hit=2, min=1838ms, avg=2148ms, max=2457ms, total=4296ms, stdDev=437ms}
+{% endhighlight %}
 
+<br/>
+
+{% highlight scala %}
 // includes thread info
 scala> s.toMediumString
 res4: String = Stopwatch "test" {hits=2, throughput=0.814/s, minTime=1838ms, avgTime=2148ms, maxTime=2457ms, totalTime=4296ms, stdDev=437ms, currentThreads=0, avgThreads=1.50, maxThreads=2, first=2009-12-21 11:22:54.708 PST, last=2009-12-21 11:22:57.166 PST}
+{% endhighlight %}
 
+<br/>
+
+{% highlight scala %}
 // includes threads + time distribution
 scala> s.toLongString
 res5: String = Stopwatch "test" {hits=2, throughput=0.814/s, minTime=1838ms, avgTime=2148ms, maxTime=2457ms, totalTime=4296ms, stdDev=437ms, currentThreads=0, avgThreads=1.50, maxThreads=2, first=2009-12-21 11:22:54.708 PST, last=2009-12-21 11:22:57.166 PST} Distribution {under=0, 0-1000ms: 0, 1000-2000ms: 1, 2000-3000ms: 1, 3000-4000ms: 0, 4000-5000ms: 0, 5000-6000ms: 0, 6000-7000ms: 0, 7000-8000ms: 0, 8000-9000ms: 0, 9000-10000ms: 0, over=0}
-
-// #toString is equivalent to #toMediumString
-scala> s.toString
-res6: String = Stopwatch "test" {hits=2, throughput=0.814/s, minTime=1838ms, avgTime=2148ms, maxTime=2457ms, totalTime=4296ms, stdDev=437ms, currentThreads=0, avgThreads=1.50, maxThreads=2, first=2009-12-21 11:22:54.708 PST, last=2009-12-21 11:22:57.166 PST}
 {% endhighlight %}
 
+The standard @toString@ method is equivalent to @toMediumString@.
+
+You can also use the "StopwatchStatistic":StopwatchStatistic.html interface to obtain only the information you need and display it differently.
 
 h2. Web Interface
 
+The optional @stopwatch-web.jar@ library provides a small embedded web server to monitor your application.
+
+You can embed the server by inserting the following code fragment in your application's startup code:
+
+{% highlight sh %}
+import stopwatch.web.Server
+
+val server = new stopwatch.web.Server
+
+// register StopwatchGroups you want to monitor
+server.groups ::= Stopwatch
+server.groups ::= myStopwatchGruop
+
+server.start()
+{% endhighlight %}
+
+h3. Try it!
+
+You can try a sample of the web server by running,
+
+{% highlight sh %}
+% scala -cp stopwatch-1.x.jar:stopwatch-web-1.x.jar stopwatch.web.SampleServer
+{% endhighlight %}
+
+If you point your browser to "http://localhost:9999":http://localhost:9999, you should see:
+
 !images/stopwatches-thumbnail.jpg!:images/stopwatches.png
+
+and by clicking on the distribution sparklines, you will see more details about the distribution range:
 
 !images/distribution-thumbnail.jpg!:images/distribution.png
 
-h3. TODO's
+h2. TODO's
 
 * Improve web UI
 * Add Stopwatch.error() method to measure errors and exceptions for operations and code blocks
@@ -185,6 +219,8 @@ h2. Target platform
 
 * Scala 2.7.4+ / 2.8+  (source compatible)
 * JVM 1.5+
+
+Stopwatch does not rely on any 3rd-party library dependencies.
 
 h2. Mailing list
 
