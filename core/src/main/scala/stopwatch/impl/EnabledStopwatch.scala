@@ -25,7 +25,7 @@ final class EnabledStopwatch(val name: String, private var _stats: StopwatchStat
   /**
    * Time when stopwatch was last started, or 0 if not started
    */
-  private var _start: Long = 0
+  @volatile private var _start: Long = 0
 
   // implement Stopwatch
   def start() {
@@ -50,5 +50,5 @@ final class EnabledStopwatch(val name: String, private var _stats: StopwatchStat
     case _ => false
   }
 
-  override def toString() = _stats.toString
+  override def toString() = "EnabledStopwatch: "+name
 }

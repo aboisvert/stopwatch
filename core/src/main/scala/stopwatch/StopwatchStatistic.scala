@@ -74,4 +74,14 @@ trait StopwatchStatistic {
   /** Returns average number of threads inside the stopwatch section */
   def averageThreads: Float
 
+  /** Returns a short string representation of stopwatch statistics */
+  def toShortString: String
+
+  /** Returns a medium-length string representation of stopwatch statistics */
+  def toMediumString: String
+
+  /** Returns a long string representation of stopwatch statistics,
+   *  including time distribution.
+   */
+  def toLongString: String
 }

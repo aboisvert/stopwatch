@@ -1,15 +1,15 @@
 /*
  *  Copyright 2009-2010 Alex Boisvert
  *
- *  Licensed under the Apache License, Version 2.0 (the "License"); 
- *  you may not use this file except in compliance with the License. 
- *  You may obtain a copy of the License at 
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, 
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
@@ -23,10 +23,11 @@ import stopwatch.StopwatchStatistic
 /**
  * Time statistics for a stopwatch.
  */
-final class StopwatchStatisticImpl(val factory: StopwatchGroup, val name: String)
-  extends StopwatchStatistic 
+final class StopwatchStatisticImpl(val group: StopwatchGroup, val name: String)
+  extends StopwatchStatistic
   with Cloneable
 {
+  private val millis = 1000000 // used for nanos => milliseconds conversion
 
   /** Whether the stopwatch is enabled */
   @volatile var enabled: Boolean = true // enabled by default
@@ -86,46 +87,46 @@ final class StopwatchStatisticImpl(val factory: StopwatchGroup, val name: String
   /**
    * Used to calculate the standard deviation.
    */
-  private var _sumOfSquares: Long = 0
+  private var _sumOfSquares: Double = 0.0d
 
   /* initialization */
   {
     updateRange
   }
-  
-  /** Reference to factory's range object to track change. */
+
+  /** Reference to group's range object to track change. */
   private var _range: StopwatchRange = null
 
-  def range = factory.range
-  
+  def range = group.range
+
   def totalTime = _totalTime
 
   def minTime = _minTime
 
   def maxTime = _maxTime
-  
-  def averageTime = _averageTime 
-  
-  def standardDeviationTime = _standardDeviationTime
-  
-  def maxThreads = _maxThreads
-  
-  def currentThreads = _currentThreads
-  
-  def averageThreads = _averageThreads
-  
-  def hits = _hits 
 
-  def firstAccessTime = _firstAccessTime 
-  
+  def averageTime = _averageTime
+
+  def standardDeviationTime = _standardDeviationTime
+
+  def maxThreads = _maxThreads
+
+  def currentThreads = _currentThreads
+
+  def averageThreads = _averageThreads
+
+  def hits = _hits
+
+  def firstAccessTime = _firstAccessTime
+
   def lastAccessTime = _lastAccessTime
 
-  def distribution = if (_distribution eq null) Nil else _distribution 
+  def distribution = if (_distribution eq null) Nil else _distribution
 
   def hitsUnderRange = _hitsUnderRange
-  
+
   def hitsOverRange = _hitsOverRange
-  
+
   /**
    * Update statistics following stopwatch start event.
    */
@@ -160,7 +161,7 @@ final class StopwatchStatisticImpl(val factory: StopwatchGroup, val name: String
         else _distribution(interval) += 1
       }
     }
-    factory.notifyListeners(name)
+    group.notifyListeners(name)
   }
 
   // override StopwatchStatistic.reset()
@@ -200,18 +201,17 @@ final class StopwatchStatisticImpl(val factory: StopwatchGroup, val name: String
      */
     snapshot._standardDeviationTime = 0
     if (snapshot._hits != 0) {
-      val sumOfX = snapshot._totalTime
+      val sumOfX: Double = snapshot._totalTime
       val n = snapshot._hits
-      val nMinus1: Long = if (n <= 1) 1 else n-1  // avoid division by zero
-      val numerator: Long = snapshot._sumOfSquares - ((sumOfX * sumOfX) / n)
-      snapshot._standardDeviationTime = java.lang.Math.sqrt(numerator / nMinus1).toLong
+      val nMinus1: Double = (n-1) max 1
+      val numerator: Double = snapshot._sumOfSquares - ((sumOfX * sumOfX) / n)
+      snapshot._standardDeviationTime = java.lang.Math.sqrt(numerator.toDouble / nMinus1).toLong
     }
     snapshot
   }
 
   private def updateRange() {
-    // update distribution
-    val range = factory.range
+    val range = group.range
     if (!(_range eq range)) {
       _range = range
       if (range == null) _distribution = null
@@ -221,7 +221,7 @@ final class StopwatchStatisticImpl(val factory: StopwatchGroup, val name: String
     }
   }
 
-  override def clone() = synchronized { 
+  override def clone() = synchronized {
     val clone = super.clone().asInstanceOf[StopwatchStatisticImpl]
 
     // the default clone of an array is shallow.
@@ -231,7 +231,7 @@ final class StopwatchStatisticImpl(val factory: StopwatchGroup, val name: String
     clone
   }
 
-  override def hashCode = name.hashCode 
+  override def hashCode = name.hashCode
 
   override def equals(other: Any): Boolean = other match {
     case x: StopwatchStatistic => name == x.name
@@ -239,14 +239,15 @@ final class StopwatchStatisticImpl(val factory: StopwatchGroup, val name: String
   }
 
   override def toString() = toMediumString
-  
-  /** Returns a short string representation of stopwatch statistics */ 
+
+  /** Returns a short string representation of stopwatch statistics */
   def toShortString = {
-    "Stopwatch \"%s\" {hit=%d, min=%d, avg=%d, max=%d, total=%d, stdDev=%d}".
-      format(name, _hits, _minTime, _averageTime, _maxTime, _totalTime, _standardDeviationTime)
+    "Stopwatch \"%s\" {hit=%d, min=%dms, avg=%dms, max=%dms, total=%dms, stdDev=%dms}".
+      format(name, _hits, _minTime/millis, _averageTime/millis, _maxTime/millis, _totalTime/millis,
+             _standardDeviationTime/millis)
   }
-  
-  /** Returns a medium-length string representation of stopwatch statistics */ 
+
+  /** Returns a medium-length string representation of stopwatch statistics */
   def toMediumString = {
     val dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS z")
     val delta = for {
@@ -259,23 +260,23 @@ final class StopwatchStatisticImpl(val factory: StopwatchGroup, val name: String
     def formatTime(time: Option[Long]) = time.map(dateFormat.format(_)) getOrElse "N/A"
 
     ("Stopwatch \"%s\" {hits=%d, throughput=%.3f/s, " +
-     "minTime=%d, avgTime=%d, maxTime=%d, totalTime=%d, stdDev=%d, " +
+     "minTime=%dms, avgTime=%dms, maxTime=%dms, totalTime=%dms, stdDev=%dms, " +
      "currentThreads=%d, avgThreads=%.2f, maxThreads=%d, " +
      "first=%s, last=%s}" ).format(
       name, _hits, throughput getOrElse -1L,
-      _minTime, _averageTime, _maxTime, _totalTime, _standardDeviationTime,
+      _minTime/millis, _averageTime/millis, _maxTime/millis, _totalTime/millis, _standardDeviationTime/millis,
       _currentThreads, _averageThreads, _maxThreads,
       formatTime(firstAccessTime), formatTime(_lastAccessTime))
   }
 
 
-  /** Returns a long string representation of stopwatch statistics, 
-   *  including hit distribution.
+  /** Returns a long string representation of stopwatch statistics,
+   *  including time distribution.
    */
   def toLongString = {
     toMediumString + (if (_range eq null) "" else {
-      _range.intervalsAsTuple.map( { case (lower, upper) => 
-         lower+"-"+upper+"ms: "+_distribution(_range.interval(lower)) }
+      _range.intervalsAsTuple.map( { case (lower, upper) =>
+         (lower/millis)+"-"+(upper/millis)+"ms: "+_distribution(_range.interval(lower)) }
        ).mkString(" Distribution {under=%d, ", ", ", ", over=%d}").
          format(_hitsUnderRange, _hitsOverRange)
     })
