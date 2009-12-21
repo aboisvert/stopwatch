@@ -19,7 +19,8 @@ package stopwatch
 /**
  * Time statistics collected by a stopwatch.
  * <p>
- * All time values are provided in milliseconds.
+ * Wall clock values are provided in milliseconds (from System.currentTimeMillis).
+ * Other measured time values are in nanoseconds (from System.nanoTime).
  */
 trait StopwatchStatistic {
 
@@ -50,16 +51,16 @@ trait StopwatchStatistic {
   /** Returns the maximum amount of time spent by any given thread inside the stopwatch (in nanoseconds). */
   def maxTime: Long
 
-  /** Returns the range used for hit distribution */
+  /** Returns the range used for recording execution time distribution */
   def range: StopwatchRange
 
-  /** Returns hit distribution per interval. */
+  /** Returns execution time distribution over the defined range. */
   def distribution: Seq[Long]
 
-  /** Returns the number of hits under range. */
+  /** Returns the number of hits with execution time under range. */
   def hitsUnderRange: Long
 
-  /** Returns the number of hits over range. */
+  /** Returns the number of hits with execution time over range. */
   def hitsOverRange: Long
 
   /** Returns the standard deviation of time for each event (in nanoseconds). */
