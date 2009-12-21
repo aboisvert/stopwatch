@@ -3,52 +3,27 @@ Stopwatch
 
 #### Stopwatch API to easily monitor production Scala applications. ####
 
-This API can be used to determine application performance bottlenecks,
-user/application interactions, and application scalability. Each stopwatch
-gathers summary statistics such as hits, execution times (total, average,
-minimum, maximum, standard deviation), distribution, and simultaneous
-application requests.
+This README.md file is the developer documentation.
 
-### Basic Usage ###
-    
-    import stopwatch.Stopwatch
+Please refer to the website at http://aboisvert.github.com/stopwatch/ for user documentation.
 
-    Stopwatch("test") {
-      // code being timed
-    }
-   
-### Usage for non-inlined code ###
+### About Buildr ###
 
-    val stopwatch = Stopwatch.start("test")
+Stopwatch's build system is based on Apache Buildr <http://buildr.apache.org/> which is a Ruby/JRuby-based build system.
 
-    // and later, elsewhere in your code
-    stopwatch.stop()
-    
-### Defining distribution intervals ###
+See <http://buildr.apache.org/installing.html> for instructions on installing Buildr.
 
-    import stopwatch.Stopwatch
-    import stopwatch.StopwatchRange
+### Building ###
 
-    // somewhere in your code, before using the stopwatch
-    // distribution:  0s to 15s in 500ms intervals
-    Stopwatch.range = StopwatchRange(0, 15000, 500)
 
-### Resetting statistics ###
+    # compile, test and package .jars
+    buildr package
 
-    import stopwatch.Stopwatch
+### Web interface sample ###
 
-    // somewhere in your code, before using the stopwatch
-    // distribution:  0s to 15s in 500ms intervals
-    Stopwatch.reset("test")
+    # launch the sample stopwatch server on port 9999
+    buildr sample
 
-### Displaying statistics ###
-    
-    stats = Stopwatch.snapshot("test")
-    Console.println(stats.toShortString)
-    Console.println(stats.toMediumString) // includes thread info
-    Console.println(stats.toLongString)   // includes threads + hit distribution
-    Console.println(stats)                // defaults to medium string
-    
 ### Target platform ###
 
 * Scala 2.7.4+ / 2.8+  (source compatible)
@@ -58,5 +33,5 @@ application requests.
 
 Copyright (C) 2009-2010 by Alex Boisvert.
 
-Stopwatch is is licensed under the terms of the Apache Software License v2.0. 
+Stopwatch is is licensed under the terms of the Apache Software License v2.0.
 <http://www.apache.org/licenses/LICENSE-2.0.html>
