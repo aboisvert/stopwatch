@@ -5,7 +5,7 @@ Stopwatch
 
 This README.md file is the developer documentation.
 
-Please refer to the website at http://aboisvert.github.com/stopwatch/ for user documentation.
+Please refer to the website at <http://aboisvert.github.com/stopwatch/> for user documentation.
 
 ### About Buildr ###
 
@@ -19,7 +19,7 @@ See <http://buildr.apache.org/installing.html> for instructions on installing Bu
     # compile, test and package .jars
     buildr package
 
-### Web interface sample ###
+### Launching the sample web UI ###
 
     # launch the sample stopwatch server on port 9999
     buildr sample
