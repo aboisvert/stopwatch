@@ -104,6 +104,10 @@ ul.posts {
   margin-bottom: 2em;
 }
 
+a img {
+  border: none;
+}
+
   .site .title a {
     color: #a00;
     text-decoration: none;

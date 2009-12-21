@@ -3,23 +3,22 @@ layout: default
 title: Stopwatch
 ---
 
-h2. Monitor your production Scala applications.
+h2. Monitor your production Scala (and other JVM) applications.
 
-This API can be used to determine application performance bottlenecks, user/application interactions, and application scalability. Each stopwatch gathers summary statistics such as hits, execution times (total, average, minimum, maximum, standard deviation), distribution, and simultaneous requests or threads.
+This small Scala library can be used to determine application performance bottlenecks, user/application interactions, and application scalability. Each stopwatch gathers summary statistics such as hits, execution times (total, average, minimum, maximum, standard deviation), distribution, simultaneous requests or concurrent threads.
 
-h2. Basic Usage
+h2. Usage
 
-h3. Critical Section
+h3. Measuring your code
 
 {% highlight scala %}
 import stopwatch.Stopwatch
 
-// A stopwatch surrounds your code,
-// like a critical section
-Stopwatch("test") {
+// A stopwatch surrounds your code
+Stopwatch("someName") {
   // code being timed
   doSomething()
-  somethingEvenLonger()
+  somethingElse()
 }
 {% endhighlight %}
 
@@ -28,17 +27,101 @@ h3. Usage for non-inlined code
 Sometimes you want to measure the performance of an operation which is not emcompassed by a single code section.  You can then use the @start@ and @stop@ methods to delimit the scope of the operation.
 
 {% highlight scala %}
+// get a stopwatch instance
 val stopwatch = Stopwatch.start("test")
 
 // and later, elsewhere in your code
+// use the same instance to signal completion
 stopwatch.stop()
+
+// if there was an error, use error() instead
+stopwatch.error()
 {% endhighlight %}
 
-This approach can also be used for languages other than Scala (e.g. Java) that may not be able to pass in a Scala closure as second argument list.
+These @start@, @stop@ and @error@ methods can also be used directly by JVM languages other than Scala (e.g. Java, Closure, Groovy) to provide more idiomatic wrappers for inlined code measurement.
 
-h3. Distribution Range
+h3. Groups
 
-You can define a range on stopwatch groups (see below) to plot execution time distribution graphs.
+@StopwatchGroup@ 's are useful to organize stopwatches, avoid name clashes, and specify behavior for multiple stopwatches at once.
+
+The singleton @Stopwatch@ object that has been used so far in the examples is actually the default @StopwatchGroup@.  You can define other stopwatch groups, each having their own distribution range and enabled/disabled state.
+
+By default, groups are disabled and have no defined range.
+
+{% highlight scala %}
+import stopwatch.Stopwatch
+import stopwatch.StopwatchGroup
+import stopwatch.TimeUnit._
+
+val incomingRequests = new StopwatchGroup("Incoming Requests")
+
+// configure
+incomingRequests.enabled = true
+incomingRequests.range = StopwatchRange(0 seconds, 30 seconds, 1000 millis)
+
+// usage for code blocks
+incomingRequests(clientId) {
+  doStuffForClient()
+}
+{% endhighlight %}
+
+h3. Enabling and disabling
+
+There are 3 ways to manage if and how stopwatches are enabled.
+
+1) At the group level
+
+As we have seen above, you can enable/disable stopwatches at the group level,
+
+{% highlight scala %}
+// the default group
+Stopwatch.enabled = true
+
+// or if you have created your own group
+myStopwatchGroup.enabled = false
+{% endhighlight %}
+
+By default, groups are disabled.  You must explicitly enable them to monitor your application.
+
+2) "On demand"
+
+If a group is enabled and a new stopwatch name is used, the @enableOnDemand@ property controls whether the new stopwatch is automatically enabled,
+
+{% highlight scala %}
+// the default group
+Stopwatch.enableOnDemand = true
+
+// or if you have created your own group
+myStopwatchGroup.enableOnDemand = false
+
+// when enableOnDemand is false,
+// must must explicitly enable stopwatches
+myStopwatchGroup.enable("someCode")
+{% endhighlight %}
+
+Otherwise, non-preinitialized stopwatches are disabled by default.  If @enableOnDemand@ is @false@, you must explicitly enable stopwatches (see below).
+
+3) Individual stopwatches
+
+In addition to enabling/disabling at the group level, you can also enable and disable individual stopwatches explicitly,
+
+{% highlight scala %}
+// the default group
+Stopwatch.enable("myCode")
+// or...
+Stopwatch.disable("myCode")
+
+// if you have created your own group
+myStopwatchGroup.enable("myCode")
+// or ...
+myStopwatchGroup.disable("myCode")
+{% endhighlight %}
+
+By default, stopwatches are enabled -- assuming the group is @enabled@ and @enableOnDemand@ is @true@.   The group must be enabled in order for its stopwatches to record measurements.
+
+h3. Time Distribution
+
+You can define a time distribution range on stopwatch groups to plot execution time distribution graphs.
 
 {% highlight scala %}
 import stopwatch.Stopwatch
@@ -47,7 +130,7 @@ import stopwatch.TimeUnit._
 
 // somewhere in your code, before using the stopwatch
 // distribution:  0s to 15s in 500ms intervals
-Stopwatch.range = StopwatchRange(0 millis, 15000 millis, 500 millis)
+Stopwatch.range = StopwatchRange(0 seconds, 15 seconds, 500 millis)
 {% endhighlight %}
 
 h3. Resetting statistics
@@ -62,35 +145,21 @@ Stopwatch.reset("test")
 
 h3. Displaying statistics
 
+The "low-tech" way to display statistics is to use one of the @toString@ methods.  This can be useful if you want to log statistics directly to the @Console@ or through an existing logging frameworks, such as Log4J.
+
 {% highlight scala %}
 val stats = Stopwatch.snapshot("test")
+
 Console.println(stats.toShortString)
+// displays:
+// Stopwatch "test" {hit=2, min=2391ms, avg=4642072418, max=6892ms, total=9284144836, stdDev=951875577}
+
+
 Console.println(stats.toMediumString) // includes thread info
-Console.println(stats.toLongString)   // includes threads + hit distribution
+Console.println(stats.toLongString)   // includes threads + time distribution
 Console.println(stats)                // defaults to medium string
 {% endhighlight %}
 
-h2. Advanced Use Cases
-
-h3. Grouping
-
-You can define multiple stopwatch groups, each having their own distribution range.   Groups are also useful for visual organization and to avoid name clashes.
-
-{% highlight scala %}
-import stopwatch.Stopwatch
-import stopwatch.StopwatchGroup
-import stopwatch.TimeUnit._
-
-val incomingRequests = new StopwatchGroup("Incoming Requests")
-incomingRequest.range = StopwatchRange(0 millis, 30000 millis, 1000 millis)
-
-incomingRequests(clientId) {
-  // code being timed
-  doStuffForClient()
-}
-{% endhighlight %}
-
-The singleton @Stopwatch@ object that has been used in the above examples is the default group.
 
 h2. Web Interface
 
@@ -111,8 +180,18 @@ h2. Target platform
 * Scala 2.7.4+ / 2.8+  (source compatible)
 * JVM 1.5+
 
-h2. License
+h2. Mailing list
 
-Copyright (C) 2009-2010 by Alex Boisvert.
+Questions?  Comments?  Join, browse or search the "mailing list":http://groups.google.com/group/scala-stopwatch
+
+If you are a member of the mailing list, you can send messages directly to "scala-stopwatch@googlegroups.com":mailto:scala-stopwatch@googlegroups.com
+
+h2. Download
+
+Download directly from the Maven2 repository.
+
+http://repo.alexboisvert.org/maven2/org/alexboisvert/stopwatch
+
+h2. License
 
 Stopwatch is is licensed under the terms of the "Apache Software License v2.0":http://www.apache.org/licenses/LICENSE-2.0.html
