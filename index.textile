@@ -179,7 +179,7 @@ The optional @stopwatch-web.jar@ library provides a small embedded web server to
 
 You can embed the server by inserting the following code fragment in your application's startup code:
 
-{% highlight sh %}
+{% highlight scala %}
 import stopwatch.web.Server
 
 val server = new stopwatch.web.Server
