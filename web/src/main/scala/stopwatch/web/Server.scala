@@ -21,6 +21,7 @@ import stopwatch.StopwatchGroup
 import stopwatch.StopwatchRange
 import stopwatch.StopwatchStatistic
 import stopwatch.TimeUnit
+import stopwatch.TimeUnit._
 
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
@@ -351,9 +352,9 @@ class Server extends WebServer with ResourceHandler {
       implicit def timeToLong(t: TimeUnit) = t.toNanos
 
       val step = (range.higherBound - range.lowerBound) / 10
-      val xmin: Long = range.lowerBound - step
-      val xmax: Long = range.higherBound + step
-      val r = xmin to xmax by (range.step: Long)
+      val xmin = range.lowerBound - step
+      val xmax = range.higherBound + step
+      val r = StopwatchRange(xmin, xmax, range.step).toList
       val data = {
         // var data = [[0,5],[1,2], [2,3], [3,4], [4,5]];
         List((xmin, s.hitsUnderRange)) :::
@@ -374,8 +375,8 @@ class Server extends WebServer with ResourceHandler {
         } mkString ","
       }
       val ymin = 0
-      val ymax = ((s.distribution.max+10)/10*10) // we want multiple of 10
-      val yticks = 0L to ymax by (ymax/10) mkString ("[", ",", "]")
+      val ymax = ((s.distribution.reduceRight((a:Long, b:Long) => a.max(b))+10)/10*10) // we want multiple of 10
+      val yticks = StopwatchRange(0 nanos, ymax nanos, (ymax/10) nanos).toList mkString ("[", ",", "]")
 
       val xhtml = <html>
         <head>

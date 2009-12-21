@@ -18,7 +18,8 @@ package stopwatch
 
 /** Implicit conversion from Long to TimeUnit */
 object TimeUnit {
-  implicit def intToTimeUnitConverter(value: Long) = TimeUnitConverter(value)
+  implicit def intToTimeUnitConverter(value: Int) = TimeUnitConverter(value)
+  implicit def longToTimeUnitConverter(value: Long) = TimeUnitConverter(value)
 }
 
 /** Add "nanos", "micros", "millis" and "seconds" to Long numbers */
