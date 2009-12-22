@@ -166,7 +166,7 @@ class StopwatchGroup(val name: String) {
   }
 
   implicit def javaToScala[T](set: java.util.Collection[T]): Iterable[T] = {
-    var result = scala.collection.mutable.ArrayBuffer[T]()
+    var result = new scala.collection.mutable.ArrayBuffer[T]()
     set.toArray.foreach { x => result += x.asInstanceOf[T] }
     result
   }
