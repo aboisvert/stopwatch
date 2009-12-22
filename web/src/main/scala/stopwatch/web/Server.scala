@@ -389,25 +389,28 @@ class Server extends WebServer with ResourceHandler {
       import s._
       implicit def timeToLong(t: TimeUnit) = t.toNanos
 
-      val step = (range.higherBound - range.lowerBound) / 10
-      val xmin = range.lowerBound - step
-      val xmax = range.higherBound + step
-      val r = StopwatchRange(xmin, xmax, range.step).toList
+      val step: Long = (range.higherBound - range.lowerBound) / 10
+      val xmin: Long = range.lowerBound - step
+      val xmax: Long = range.higherBound + step
       val data = {
         // var data = [[0,5],[1,2], [2,3], [3,4], [4,5]];
         List((xmin, s.hitsUnderRange)) :::
         ( s.distribution.toList.zipWithIndex
-            map { case (hits, i) => (range.lowerBound+(i*range.step), hits) }
+            map { case (hits, i) => ((range.lowerBound+(i*range.step)) toNanos, hits) }
         ) ::: List((xmax, s.hitsOverRange)) map {
           case (hits, x) => "[%d,%d]".format(hits, x)
         } mkString ","
       }
+      val convert = if (step.nanos > 1000000) {
+        (x: Long) => (x/1000000).toString + "ms"
+      } else {
+        (x: Long) => (x/1000000).toString + "ns"
+      }
       val xticks = {
-        val min = range.lowerBound
-        val max = range.higherBound
+        val r = StopwatchRange(xmin nanos, xmax nanos, step nanos).toList
         // var ticks = [[0,"Under"],[100,11], [200,22], [300,33], [400,"Over"]];
         List((xmin, "Under")) :::
-        range.toList.map { x => (x, x.toString) } :::
+        r.toList.map { x => (x, convert(x)) } :::
         List((xmax, "Over")) map {
           case (x, s) => """[%d,"%s"]""".format(x,s)
         } mkString ","
