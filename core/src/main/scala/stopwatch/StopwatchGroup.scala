@@ -98,7 +98,7 @@ class StopwatchGroup(val name: String) {
 
   /** Reset all stopwatches. */
   def resetAll() {
-    for (s <- _stats.values.toArray.asInstanceOf[Array[StopwatchStatisticImpl]]) {
+    for (s <- _stats.values) {
       s.reset()
     }
   }
@@ -163,5 +163,11 @@ class StopwatchGroup(val name: String) {
     var newSet = Set[T]()
     set.toArray.foreach { x => newSet += x.asInstanceOf[T] }
     newSet
+  }
+
+  implicit def javaToScala[T](set: java.util.Collection[T]): Iterable[T] = {
+    var result = scala.collection.mutable.ArrayBuffer[T]()
+    set.toArray.foreach { x => result += x.asInstanceOf[T] }
+    result
   }
 }
