@@ -22,7 +22,7 @@ Stopwatch("someName") {
 }
 {% endhighlight %}
 
-h3. Usage for non-inlined code
+h3. Non-inlined code
 
 Sometimes you want to measure the performance of an operation which is not emcompassed by a single code section.  You can then use the @start@ and @stop@ methods to delimit the scope of the operation.
 
