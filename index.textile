@@ -175,7 +175,7 @@ You can also use the "StopwatchStatistic":StopwatchStatistic.html interface to o
 
 h2. Web Interface
 
-The optional @stopwatch-web.jar@ library provides a small embedded web server to monitor your application.
+The optional @stopwatch-web.jar@ library provides a small embedded web server to monitor your application in a development/certification setting.  It does not yet provide any security beyond only opening "localhost" loopback-only port.
 
 You can embed the server by inserting the following code fragment in your application's startup code:
 
@@ -187,6 +187,9 @@ val server = new stopwatch.web.Server
 // register StopwatchGroups you want to monitor
 server.groups ::= Stopwatch
 server.groups ::= myStopwatchGruop
+
+// configure port number
+server.port = 9999
 
 server.start()
 {% endhighlight %}
