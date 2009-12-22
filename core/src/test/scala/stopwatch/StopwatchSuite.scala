@@ -29,9 +29,9 @@ class StopwatchSuite extends FunSuite with ShouldMatchers {
   implicit def timeToNanos(t: TimeUnit) = t.toNanos
 
   test("Default statistic values") {
-    val factory = new StopwatchGroup("test")
-    factory.enabled = true
-    val stat = factory.snapshot("foo")
+    val group = new StopwatchGroup("test")
+    group.enabled = true
+    val stat = group.snapshot("foo")
     stat.name should equal ("foo")
     stat.firstAccessTime should equal (None)
     stat.minTime should equal (-1)
@@ -41,39 +41,39 @@ class StopwatchSuite extends FunSuite with ShouldMatchers {
     stat.lastAccessTime should equal (None)
   }
 
-  test("Enabled factory should call closure") {
-    val factory = new StopwatchGroup("test")
-    factory.enabled = true
+  test("Enabled group should call closure") {
+    val group = new StopwatchGroup("test")
+    group.enabled = true
 
     var called = false
-    factory("foo") {
+    group("foo") {
       called = true
     }
     called should be === true
   }
 
-  test("Disabled factory should call closure") {
-    val factory = new StopwatchGroup("test")
-    factory.enabled = false
+  test("Disabled group should call closure") {
+    val group = new StopwatchGroup("test")
+    group.enabled = false
 
     var called = false
-    factory("foo") {
+    group("foo") {
       called = true
     }
     called should be === true
   }
 
   test("Statistic values after one use") {
-    val factory = new StopwatchGroup("test")
-    factory.enabled = true
+    val group = new StopwatchGroup("test")
+    group.enabled = true
 
     val start = System.currentTimeMillis
-    factory("foo") {
+    group("foo") {
       Thread.sleep(10)
     }
     val end = System.currentTimeMillis
 
-    val stat = factory.snapshot("foo")
+    val stat = group.snapshot("foo")
 
     stat.name should equal ("foo")
 
@@ -97,35 +97,35 @@ class StopwatchSuite extends FunSuite with ShouldMatchers {
   }
 
   test("Current threads, max threads and average threads") {
-    val factory = new StopwatchGroup("test")
-    factory.enabled = true
+    val group = new StopwatchGroup("test")
+    group.enabled = true
 
-    val s1 = factory.get("foo")
-    val s2 = factory.get("foo")
-    val s3 = factory.get("foo")
+    val s1 = group.get("foo")
+    val s2 = group.get("foo")
+    val s3 = group.get("foo")
 
-    factory.snapshot("foo").currentThreads should be === 0
+    group.snapshot("foo").currentThreads should be === 0
     s1.start()
-    factory.snapshot("foo").currentThreads should be === 1
-    factory.snapshot("foo").maxThreads     should be === 1
+    group.snapshot("foo").currentThreads should be === 1
+    group.snapshot("foo").maxThreads     should be === 1
     s2.start()
-    factory.snapshot("foo").currentThreads should be === 2
-    factory.snapshot("foo").maxThreads     should be === 2
+    group.snapshot("foo").currentThreads should be === 2
+    group.snapshot("foo").maxThreads     should be === 2
     s3.start()
-    factory.snapshot("foo").currentThreads should be === 3
-    factory.snapshot("foo").maxThreads     should be === 3
+    group.snapshot("foo").currentThreads should be === 3
+    group.snapshot("foo").maxThreads     should be === 3
     Thread.sleep(10)
     s2.stop()
-    factory.snapshot("foo").currentThreads should be === 2
-    factory.snapshot("foo").maxThreads     should be === 3
+    group.snapshot("foo").currentThreads should be === 2
+    group.snapshot("foo").maxThreads     should be === 3
     s1.stop()
-    factory.snapshot("foo").currentThreads should be === 1
-    factory.snapshot("foo").maxThreads     should be === 3
+    group.snapshot("foo").currentThreads should be === 1
+    group.snapshot("foo").maxThreads     should be === 3
     s3.stop()
-    factory.snapshot("foo").currentThreads should be === 0
-    factory.snapshot("foo").maxThreads     should be === 3
+    group.snapshot("foo").currentThreads should be === 0
+    group.snapshot("foo").maxThreads     should be === 3
 
-    val stat = factory.snapshot("foo")
+    val stat = group.snapshot("foo")
     stat.averageThreads should be >= 1f
     stat.minTime should be >= 10L
     stat.averageTime should be >= 10L
@@ -134,18 +134,18 @@ class StopwatchSuite extends FunSuite with ShouldMatchers {
   }
 
   test("Values after reset()") {
-    val factory = new StopwatchGroup("test")
-    factory.enabled = true
-    factory.range = StopwatchRange(0 millis, 200 millis, 100 millis)
-    factory("foo") {
+    val group = new StopwatchGroup("test")
+    group.enabled = true
+    group.range = StopwatchRange(0 millis, 200 millis, 100 millis)
+    group("foo") {
       Thread.sleep(10)
     }
-    factory("foo") {
+    group("foo") {
       Thread.sleep(100)
     }
-    factory.reset("foo")
+    group.reset("foo")
 
-    val stat = factory.snapshot("foo")
+    val stat = group.snapshot("foo")
     stat.name should equal ("foo")
     stat.firstAccessTime should equal (None)
     stat.minTime should equal (-1)
@@ -164,20 +164,30 @@ class StopwatchSuite extends FunSuite with ShouldMatchers {
   }
 
   test("Listeners") {
-    val factory = new StopwatchGroup("test")
-    factory.enabled = true
+    val group = new StopwatchGroup("test")
+    group.enabled = true
 
     var called = false
 
-    factory.addListener { name: String =>
+    group.addListener { name: String =>
       name should be === "foo"
       called = true
     }
 
-    factory("foo") {
+    group("foo") {
       called should be === false
     }
     called should be === true
   }
 
+  test("error handling") {
+    val group = new StopwatchGroup("test")
+    group.enabled = true
+
+    evaluating {
+      group("foo") {
+        error("yak!")
+      }
+    } should produce [RuntimeException]
+  }
 }

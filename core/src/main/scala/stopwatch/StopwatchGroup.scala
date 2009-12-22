@@ -58,10 +58,7 @@ class StopwatchGroup(val name: String) {
    */
   @volatile var range: StopwatchRange = null
 
-  /** Measure the elapsed time spent during execution of the provided function.
-   * <p>
-   * This is the equivalent of <code> start(); try { f() } finally { stop() }  <code>
-   */
+  /** Measure the elapsed time spent during execution of the provided function. */
   def apply[T](name: String)(f: => T): T = {
     val stopwatch = get(name)
     stopwatch.doWith(f)

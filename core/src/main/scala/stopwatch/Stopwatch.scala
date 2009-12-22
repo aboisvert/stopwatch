@@ -47,16 +47,16 @@ trait Stopwatch {
    */
   def error(): Unit
 
-  /** Measure the elapsed time spent during execution of the provided function.
-   * <p>
-   * This is the equivalent of <code> start(); try { f() } finally { stop() }  <code>
-   */
+  /** Measure the elapsed time spent during execution of the provided function. */
   def doWith[T](f: => T): T = {
     start()
     try {
-      f
-    } finally {
+      val result = f
       stop()
+      result
+    } catch { case e =>
+      error()
+      throw e
     }
   }
 

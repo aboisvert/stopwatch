@@ -60,10 +60,9 @@ case class StopwatchRange(lowerBound: TimeUnit, higherBound: TimeUnit, step: Tim
   def spread: Long = _high-_low
 
   def toList: List[Long] = {
-    val max = intervals
     var l = List[Long]()
     var n = 0L
-    while (n < max) {
+    while (n < _high) {
       l ::= n
       n += _step
     }
