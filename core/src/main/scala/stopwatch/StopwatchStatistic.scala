@@ -37,6 +37,9 @@ trait StopwatchStatistic {
   /** Number of times the stopwatch was started */
   def hits: Long
 
+  /** Number of times the stopwatch operation had an error */
+  def errors: Long
+
   /** Returns the average amount of time taken to complete one invocation of
    *  this operation since the beginning of this measurement (in nanoseconds).
    */

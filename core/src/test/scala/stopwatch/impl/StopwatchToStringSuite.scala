@@ -37,22 +37,22 @@ class StopwatchToStringSuite extends FunSuite with ShouldMatchers {
     val now = System.currentTimeMillis()
     var stats = factory.snapshot("foo").asInstanceOf[stopwatch.impl.StopwatchStatisticImpl]
     stats.notifyStart(now+0)
-    stats.notifyStop(now+50, 50)
+    stats.notifyStop(now+50, 50, false)
 
     stats.notifyStart(now+0)
-    stats.notifyStop(now+99, 99)
+    stats.notifyStop(now+99, 99, false)
 
     stats.notifyStart(now+0)
-    stats.notifyStop(now+100, 100)
+    stats.notifyStop(now+100, 100, false)
 
     stats.notifyStart(now+0)
-    stats.notifyStop(now+199, 199)
+    stats.notifyStop(now+199, 199, false)
 
     stats.notifyStart(now+0)
-    stats.notifyStop(now+200, 200)
+    stats.notifyStop(now+200, 200, false)
 
     stats.notifyStart(now+200)
-    stats.notifyStop(now+700, 500)
+    stats.notifyStop(now+700, 500, true)
 
     stats = stats.snapshot // force calc of stats
     

@@ -41,6 +41,12 @@ trait Stopwatch {
    */
   def stop(): Unit
 
+  /** Stop measuring time and report an error
+   *
+   * @exception IllegalStateException if stopwatch wasn't already started.
+   */
+  def error(): Unit
+
   /** Measure the elapsed time spent during execution of the provided function.
    * <p>
    * This is the equivalent of <code> start(); try { f() } finally { stop() }  <code>

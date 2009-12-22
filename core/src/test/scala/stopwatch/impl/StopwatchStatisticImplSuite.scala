@@ -39,7 +39,7 @@ class StopwatchStatisticImplSuite extends FunSuite with ShouldMatchers {
     val s1 = factory.snapshot("foo").asInstanceOf[stopwatch.impl.StopwatchStatisticImpl]
 
     s1.notifyStart(0)
-    s1.notifyStop(50, 50 millis)
+    s1.notifyStop(50, 50 millis, false)
 
     var stats = s1
     stats.distribution.length should be === 4
@@ -49,48 +49,50 @@ class StopwatchStatisticImplSuite extends FunSuite with ShouldMatchers {
     stats.distribution(3) should be === 0L
 
     s1.notifyStart(0)
-    s1.notifyStop(99, 99 millis)
+    s1.notifyStop(99, 99 millis, false)
     stats.distribution(0) should be === 2L
     stats.distribution(1) should be === 0L
     stats.distribution(2) should be === 0L
     stats.distribution(3) should be === 0L
 
     s1.notifyStart(0)
-    s1.notifyStop(100, 100 millis)
+    s1.notifyStop(100, 100 millis, false)
     stats.distribution(0) should be === 2L
     stats.distribution(1) should be === 1L
     stats.distribution(2) should be === 0L
     stats.distribution(3) should be === 0L
 
     s1.notifyStart(0)
-    s1.notifyStop(199, 199 millis)
+    s1.notifyStop(199, 199 millis, false)
     stats.distribution(0) should be === 2L
     stats.distribution(1) should be === 2L
     stats.distribution(2) should be === 0L
     stats.distribution(3) should be === 0L
 
     s1.notifyStart(0)
-    s1.notifyStop(200, 200 millis)
+    s1.notifyStop(200, 200 millis, false)
     stats.distribution(0) should be === 2L
     stats.distribution(1) should be === 2L
     stats.distribution(2) should be === 1L
     stats.distribution(3) should be === 0L
 
     s1.notifyStart(200)
-    s1.notifyStop(500, 300 millis)
+    s1.notifyStop(500, 300 millis, false)
     stats.distribution(0) should be === 2L
     stats.distribution(1) should be === 2L
     stats.distribution(2) should be === 1L
     stats.distribution(3) should be === 1L
+    stats.errors should be === 0
 
     s1.notifyStart(200)
-    s1.notifyStop(700, 500 millis)
+    s1.notifyStop(700, 500 millis, true)
     stats.distribution(0) should be === 2L
     stats.distribution(1) should be === 2L
     stats.distribution(2) should be === 1L
     stats.distribution(3) should be === 1L
     stats.hitsUnderRange should be === 0
     stats.hitsOverRange should be === 1
+    stats.errors should be === 1
   }
 
   test("Hits under range") {
@@ -106,7 +108,7 @@ class StopwatchStatisticImplSuite extends FunSuite with ShouldMatchers {
     s1.hitsUnderRange should be === 0
 
     s1.notifyStart(0)
-    s1.notifyStop(50, 50 millis)
+    s1.notifyStop(50, 50 millis, false)
     s1.hitsUnderRange should be === 1
   }
 }

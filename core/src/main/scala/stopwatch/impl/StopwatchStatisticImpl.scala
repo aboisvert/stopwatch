@@ -32,8 +32,11 @@ final class StopwatchStatisticImpl(val group: StopwatchGroup, val name: String)
   /** Whether the stopwatch is enabled */
   @volatile var enabled: Boolean = true // enabled by default
 
-  /** Description of the stopwatch. */
-  @volatile var description: String = ""
+  /** Number of start "hits" */
+  private var _hits: Long = 0
+
+  /** Number of errors */
+  private var _errors: Long = 0
 
   /** Total time, represents the elapsed time while the stopwatch was started. */
   private var _totalTime: Long = 0
@@ -59,9 +62,6 @@ final class StopwatchStatisticImpl(val group: StopwatchGroup, val name: String)
   /** Average number of threads when stopwatch is entered. */
   private var _averageThreads: Float = 0
 
-  /** Number of start "hits" */
-  private var _hits: Long = 0
-
   /** Time when stopwatch was first accessed. */
   private var _firstAccessTime: Option[Long] = None
 
@@ -79,23 +79,23 @@ final class StopwatchStatisticImpl(val group: StopwatchGroup, val name: String)
   /** Number of hits over range. */
   private var _hitsOverRange = 0L
 
-  /**
-   * Used to calculate the average number of threads
-   */
+  /** Used to calculate the average number of threads */
   private var _totalThreadsDuringStart: Long = 0
 
-  /**
-   * Used to calculate the standard deviation.
-   */
+  /** Used to calculate the standard deviation. */
   private var _sumOfSquares: Double = 0.0d
+
+  /** Reference to group's range object to track change. */
+  private var _range: StopwatchRange = null
 
   /* initialization */
   {
     updateRange
   }
 
-  /** Reference to group's range object to track change. */
-  private var _range: StopwatchRange = null
+  def hits = _hits
+
+  def errors = _errors
 
   def range = group.range
 
@@ -115,13 +115,14 @@ final class StopwatchStatisticImpl(val group: StopwatchGroup, val name: String)
 
   def averageThreads = _averageThreads
 
-  def hits = _hits
-
   def firstAccessTime = _firstAccessTime
 
   def lastAccessTime = _lastAccessTime
 
-  def distribution = if (_distribution eq null) Nil else _distribution
+  def distribution: Seq[Long] = {
+    if (range eq null) return Nil
+    if (_distribution eq null) List.make(range.intervals, 0) else _distribution
+  }
 
   def hitsUnderRange = _hitsUnderRange
 
@@ -142,12 +143,14 @@ final class StopwatchStatisticImpl(val group: StopwatchGroup, val name: String)
   /**
    * Update statistics following stopwatch stop event.
    */
-  private[impl] def notifyStop(currentTime: Long, elapsed: Long) = {
+  private[impl] def notifyStop(currentTime: Long, elapsed: Long, error: Boolean) = {
     synchronized {
       _currentThreads -= 1
       _totalTime += elapsed
       _lastAccessTime = Some(currentTime)
       _sumOfSquares += elapsed*elapsed
+
+      if (error) _errors += 1
 
       if (_maxTime < elapsed) _maxTime = elapsed
       if ((_minTime > elapsed) || (_minTime == -1L)) _minTime = elapsed
@@ -166,12 +169,13 @@ final class StopwatchStatisticImpl(val group: StopwatchGroup, val name: String)
 
   // override StopwatchStatistic.reset()
   def reset() = synchronized {
+    _hits = 0
+    _errors = 0
     _totalTime = 0
     _minTime = -1
     _maxTime = -1
     _firstAccessTime = None
     _lastAccessTime  = None
-    _hits = 0
     _maxThreads = 0
     _range = null
     _distribution = null
@@ -183,6 +187,7 @@ final class StopwatchStatisticImpl(val group: StopwatchGroup, val name: String)
 
   /** Take a snapshot of the StopwatchStatistic. */
   def snapshot() = {
+    // clone() is synchronized -- see below
     val snapshot = clone().asInstanceOf[StopwatchStatisticImpl]
 
     // calculate average threads & average time
@@ -222,13 +227,13 @@ final class StopwatchStatisticImpl(val group: StopwatchGroup, val name: String)
   }
 
   override def clone() = synchronized {
-    val clone = super.clone().asInstanceOf[StopwatchStatisticImpl]
+    val cloned = super.clone().asInstanceOf[StopwatchStatisticImpl]
 
     // the default clone of an array is shallow.
     if (_distribution != null) {
-      clone._distribution = _distribution.toArray // make a copy
+      cloned._distribution = _distribution.toArray // make a copy
     }
-    clone
+    cloned
   }
 
   override def hashCode = name.hashCode
@@ -242,9 +247,9 @@ final class StopwatchStatisticImpl(val group: StopwatchGroup, val name: String)
 
   /** Returns a short string representation of stopwatch statistics */
   def toShortString = {
-    "Stopwatch \"%s\" {hit=%d, min=%dms, avg=%dms, max=%dms, total=%dms, stdDev=%dms}".
-      format(name, _hits, _minTime/millis, _averageTime/millis, _maxTime/millis, _totalTime/millis,
-             _standardDeviationTime/millis)
+    "Stopwatch \"%s\" {hits=%d, errors=%d, min=%dms, avg=%dms, max=%dms, total=%dms, stdDev=%dms}".
+      format(name, _hits, _errors, _minTime/millis, _averageTime/millis, _maxTime/millis,
+             _totalTime/millis, _standardDeviationTime/millis)
   }
 
   /** Returns a medium-length string representation of stopwatch statistics */
@@ -259,16 +264,15 @@ final class StopwatchStatisticImpl(val group: StopwatchGroup, val name: String)
 
     def formatTime(time: Option[Long]) = time.map(dateFormat.format(_)) getOrElse "N/A"
 
-    ("Stopwatch \"%s\" {hits=%d, throughput=%.3f/s, " +
+    ("Stopwatch \"%s\" {hits=%d, throughput=%.3f/s, errors=%d," +
      "minTime=%dms, avgTime=%dms, maxTime=%dms, totalTime=%dms, stdDev=%dms, " +
      "currentThreads=%d, avgThreads=%.2f, maxThreads=%d, " +
      "first=%s, last=%s}" ).format(
-      name, _hits, throughput getOrElse -1L,
+      name, _hits, throughput getOrElse -1L, _errors,
       _minTime/millis, _averageTime/millis, _maxTime/millis, _totalTime/millis, _standardDeviationTime/millis,
       _currentThreads, _averageThreads, _maxThreads,
       formatTime(firstAccessTime), formatTime(_lastAccessTime))
   }
-
 
   /** Returns a long string representation of stopwatch statistics,
    *  including time distribution.

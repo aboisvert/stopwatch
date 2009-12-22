@@ -36,6 +36,7 @@ class DisabledStopwatch
   def reset() = ()
   def start() = ()
   def stop() = ()
+  def error() = ()
   def snapshot() = Statistic
   override def doWith[T](f: => T): T = f
   

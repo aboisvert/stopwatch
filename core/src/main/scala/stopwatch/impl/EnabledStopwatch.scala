@@ -38,7 +38,14 @@ final class EnabledStopwatch(val name: String, private var _stats: StopwatchStat
     val end = System.nanoTime
     val currentTime = System.currentTimeMillis
     val elapsed = end - _start
-    _stats.notifyStop(currentTime, elapsed)
+    _stats.notifyStop(currentTime, elapsed, false)
+  }
+
+  def error() {
+    val end = System.nanoTime
+    val currentTime = System.currentTimeMillis
+    val elapsed = end - _start
+    _stats.notifyStop(currentTime, elapsed, true)
   }
 
   val enabled = true
