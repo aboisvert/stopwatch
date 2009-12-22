@@ -210,9 +210,7 @@ and by clicking on the distribution sparklines, you will see more details about 
 h2. TODO's
 
 * Improve web UI
-* Add Stopwatch.error() method to measure errors and exceptions for operations and code blocks
 * Add doc section detailing performance
-* Add reset button(s) on web UI
 * Prettify the distribution graph.  Colors are ugly.
 
 h2. Target platform
