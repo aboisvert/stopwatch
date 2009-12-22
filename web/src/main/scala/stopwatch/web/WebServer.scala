@@ -426,16 +426,16 @@ object HttpUtils {
   /** Map of file extension to MIME types */
   @volatile var MIME_TYPES: Map[String, String] = {
     var map = Map[String, String]()
-    map += (".html" -> "text/html")
-    map += (".htm"  -> "text/html")
-    map += (".css"  -> "text/css")
-    map += (".gz"  -> "application/x-gzip")
-    map += (".js"  -> "tesxt/javascript")
-    map += (".gif"  -> "image/gif")
-    map += (".jpeg" -> "image/jpeg")
-    map += (".jpeg" -> "image/jpeg")
-    map += (".png"  -> "image/png")
-    map += (".txt"  -> "txt/plain")
+    map += ("html" -> "text/html")
+    map += ("htm"  -> "text/html")
+    map += ("css"  -> "text/css")
+    map += ("gz"  -> "application/x-gzip")
+    map += ("js"  -> "tesxt/javascript")
+    map += ("gif"  -> "image/gif")
+    map += ("jpeg" -> "image/jpeg")
+    map += ("jpeg" -> "image/jpeg")
+    map += ("png"  -> "image/png")
+    map += ("txt"  -> "txt/plain")
     map
   }
 

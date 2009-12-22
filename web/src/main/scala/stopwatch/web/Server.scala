@@ -46,6 +46,9 @@ class Server extends WebServer with ResourceHandler {
 
   var groups = List[StopwatchGroup]()
 
+  /** Encode identifiers for use in attributes */
+  private def encode(s: String) = urlEncode(s).replaceAll("/", "%2F")
+
   override def doGet(request: HttpRequest, response: HttpResponse) {
     def resource(f: PartialFunction[List[String], String]) = {
       if (f isDefinedAt request.path) Some(f(request.path))
@@ -106,6 +109,20 @@ class Server extends WebServer with ResourceHandler {
         for (g <- group) { groups filter (_.name == g) foreach (_ enabled = false) }
         seeOther("/")
 
+      case Some("reset") =>
+        for (g <- group; s <- stopwatch) {
+          log.debug("resetStopwatch: %s %s" format (g,s))
+          groups filter (_.name == g) foreach (_ reset s)
+        }
+        seeOther("/")
+
+      case Some("resetGroup") =>
+        for (g <- group) {
+          log.debug("resetGroup: %s" format (g))
+          groups filter (_.name == g) foreach (_ resetAll)
+        }
+        seeOther("/")
+
       case None =>
         sendError(500, "Missing action")
     }
@@ -124,13 +141,13 @@ class Server extends WebServer with ResourceHandler {
         <title>Stopwatch</title>
         <link href="/css/reset.css" rel="stylesheet" type="text/css" />
         <link href="/css/stopwatch.css" rel="stylesheet" type="text/css" />
-        <link href="/css/jquery-checkbox.css" rel="stylesheet" type="text/css" />
+        <!-- <link href="/css/jquery-checkbox.css" rel="stylesheet" type="text/css" /> -->
         <script type="text/javascript" src="/js/jquery.js"></script>
-        <script type="text/javascript" src="/js/jquery-checkbox.js"></script>
+        <!-- <script type="text/javascript" src="/js/jquery-checkbox.js"></script> -->
         <script type="text/javascript" src="/js/jquery-colorize.js"></script>
         <script type="text/javascript" src="/js/jquery-sparkline.js"></script>
         <script type="text/javascript" src="/js/jquery-timers.js"></script>
-        <script type="text/javascript" src="/js/jquery-tools-tabs.js"></script>
+        <!-- <script type="text/javascript" src="/js/jquery-tools-tabs.js"></script> -->
         <script> { Unparsed("""
         function applyStyles() {
           // apply jQuery table colorize styling
@@ -143,19 +160,18 @@ class Server extends WebServer with ResourceHandler {
           $('.inlinesparkline').sparkline('html', {type: 'bar'});
 
           // apply jQuery checkbox styling
-          $('input:checkbox').checkbox();
+          //$('input:checkbox').checkbox();
 
           // stopwatch group on/off switches
           $('.groupSwitch input:checkbox').bind('click', function(e) {
             var action = this.checked ? 'disableGroup' : 'enableGroup'
             var group = this.name
-            // alert('click '+action+' '+group);
             jQuery.post('/group/'+group, {action: action});
           });
 
           // individual stopwatch on/off switches
           $('.stopwatchSwitch input:checkbox').bind('click', function(e) {
-            var action = this.checked ? 'disableStopwatch' : 'enableStopwatch'
+            var action = this.checked == true ? 'enableStopwatch' : 'disableStopwatch'
             var re = new RegExp('(.*)~(.*)');
             var m = re.exec(this.name);
             var group = m[1];
@@ -163,7 +179,12 @@ class Server extends WebServer with ResourceHandler {
             // alert('click '+action+' '+group+' '+stopwatch);
             jQuery.post('/group/'+group+'/stopwatch/'+stopwatch, {action: action});
           });
+        }
 
+        function refreshStopwatches() {
+          $("#stopwatches").load("/ #stopwatches", function() {
+            applyStyles();
+          });
         }
 
         $(document).ready(function() { applyStyles(); } );
@@ -186,9 +207,7 @@ class Server extends WebServer with ResourceHandler {
             });
           });
           */
-          $("#stopwatches").load("/ #stopwatches", function() {
-            applyStyles();
-          });
+          refreshStopwatches();
         });
          """) }
         </script>
@@ -210,18 +229,7 @@ class Server extends WebServer with ResourceHandler {
             } } </ul>
             */
             <div class="panes"> {
-              sortedGroups map { g =>
-                <div class="groupReplace" id={id(g.name)}>
-                  <h3 class="StopwatchGroup"> {g.name} </h3>
-                  <span class="groupSwitch">
-                    <input type="checkbox" name={g.name}
-                           checked={if (g.enabled) "checked" else null}/>
-                  </span>
-                  <table class="stopwatches">
-                    { headers(g) ++ <tbody> { rows(g) } </tbody> }
-                  </table>
-                </div>
-              }
+              sortedGroups map { renderGroup(_) }
             } </div>
           } </div>
 
@@ -241,7 +249,7 @@ class Server extends WebServer with ResourceHandler {
     <thead>
       <tr> {
         <th scope="row" class="lead" rowspan="2">Name</th> ++
-        <th scope="col" colspan="2">Hits</th> ++
+        <th scope="col" colspan="3">Hits</th> ++
         <th scope="col" colspan="5">Time</th> ++
         <th scope="col" colspan="3">Threads</th> ++
         <th scope="col" colspan="2">Access</th> ++ {
@@ -249,11 +257,13 @@ class Server extends WebServer with ResourceHandler {
             <th scope="col" rowspan="2">Distribution</th>
           } else NodeSeq.Empty
         } ++
-        <th scope="col" rowspan="2">Status</th>
+        <th scope="col" rowspan="2">Enabled</th>
+        <th scope="col" rowspan="2">Action</th>
       } </tr>
       <tr>
         <th scope="col" class="odd">Total</th>
         <th scope="col">Hits/s</th>
+        <th scope="col">Errors</th>
         <th scope="col" class="odd">Min</th>
         <th scope="col">Avg</th>
         <th scope="col" class="odd">Max</th>
@@ -266,6 +276,27 @@ class Server extends WebServer with ResourceHandler {
         <th scope="col">Last</th>
       </tr>
     </thead>
+  }
+
+  def renderGroup(g: StopwatchGroup) = {
+    val reset = (
+        "jQuery.post('/group/%s', {action: 'resetGroup'}); refreshStopwatches(); return false;"
+        .format(encode(g.name))
+    )
+
+    <div class="groupReplace" id={id(g.name)}>
+      <h3 class="StopwatchGroup"> {g.name} </h3>
+      <span class="groupSwitch">Enabled&nbsp;
+        <input type="checkbox" name={g.name}
+               checked={if (g.enabled) "checked" else null}/>
+      </span>
+      <span class="groupReset">
+        <a class="resetGroup" href="#" onclick={reset}>Reset Group</a>
+      </span>
+      <table class="stopwatches">
+        { headers(g) ++ <tbody> { rows(g) } </tbody> }
+      </table>
+    </div>
   }
 
   def rows(group: StopwatchGroup) = {
@@ -293,16 +324,20 @@ class Server extends WebServer with ResourceHandler {
       time.map(dateFormat.format(_)) getOrElse "N/A"
     }
 
-    def encode(s: String) = urlEncode(s).replaceAll("/", "%2F")
-
     implicit def timeToLong(t: TimeUnit) = t.toNanos
 
     val millis = 1000000
+
+    val reset = (
+        "jQuery.post('/group/%s/stopwatch/%s', {action: 'reset'}); refreshStopwatches(); return false;"
+        .format(encode(g.name), encode(s.name))
+    )
 
     <tr class={if (i%2==1) "odd" else "even"}> {
       <th scope="row">{s.name}</th> ++
       <td>{s.hits}</td> ++
       <td>{throughput}</td> ++
+      <td>{s.errors}</td> ++
       <td>{s.minTime/millis}</td> ++
       <td>{s.averageTime/millis}</td> ++
       <td>{s.maxTime/millis}</td> ++
@@ -335,6 +370,9 @@ class Server extends WebServer with ResourceHandler {
           <input type="checkbox" name={g.name+"~"+s.name}
                  checked={if (s.enabled) "checked" else null}/>
         </div>
+      </td> ++
+      <td>
+        <a class="resetStopwatch" href="#" onclick={reset}>Reset</a>
       </td>
     } </tr>
   }

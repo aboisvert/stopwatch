@@ -64,7 +64,13 @@ h3 {
 .groupSwitch {
   float: left;
   margin-top: 26px;
-  margin-left: 10px;
+  margin-left: 20px;
+}
+
+.groupReset {
+  float: right;
+  margin-top: 26px;
+  margin-right: 10px;
 }
 
 table {
@@ -100,64 +106,64 @@ tbody .odd {
 
 
 /* root element for tabs  */
-ul.tabs { 
-  list-style:none; 
-  margin:0 !important; 
-  padding:0;  
-  border-bottom:1px solid #666;  
+ul.tabs {
+  list-style:none;
+  margin:0 !important;
+  padding:0;
+  border-bottom:1px solid #666;
   height:30px;
 }
 
 /* single tab */
-ul.tabs li { 
-  float: left;   
+ul.tabs li {
+  float: left;
   text-indent: 0;
   padding-left: 2px;
   margin: 0 !important;
-  list-style-image:none !important; 
+  list-style-image:none !important;
   border-right:1px solid #ddd;
 }
 
 /* link inside the tab. uses a background image */
-ul.tabs a { 
+ul.tabs a {
   xbackground: url(/tools/img/tabs/blue.png) no-repeat -420px 0;
   background-color: #666;
   display: block;
-  height: 30px;  
+  height: 30px;
   line-height: 30px;
   xwidth: 134px;
-  text-align:center;  
+  text-align:center;
   text-decoration:none;
   color:#ddd;
   padding: 0px;
   padding-left: 8px;
   padding-right: 8px;
-  margin:0px;  
+  margin:0px;
   position:relative;
   top:1px;
 }
 
 ul.tabs a:active {
-  outline:none;    
+  outline:none;
 }
 
 /* when mouse enters the tab move the background image */
 ul.tabs a:hover {
-  background-position: -420px -31px;  
-  color:#fff;  
+  background-position: -420px -31px;
+  color:#fff;
 }
 
 /* active tab uses a class name "current". it's highlight is also done by moving the background image. */
 ul.tabs a.current, ul.tabs a.current:hover, ul.tabs li.current a {
   background-color: blue;
-  background-position: -420px -62px;    
-  cursor:default !important; 
+  background-position: -420px -62px;
+  cursor:default !important;
   color: white !important;
   font-weight: bold;
 }
 
-/* initially all panes are hidden */ 
+/* initially all panes are hidden */
 div.panes div.pane {
-  display:none;    
+  display:none;
 }
 
