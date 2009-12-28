@@ -21,6 +21,13 @@ define "stopwatch" do
 
   define "core" do
     package(:jar, :id => 'stopwatch')
+
+    task "perf" do
+      Java.java "stopwatch.StopwatchPerformanceSuiteRunner",
+        :classpath => [ test.compile.dependencies, test.compile.target,
+                        test.compile.target, resources.sources ],
+        :java_args => ["-server"]
+    end
   end
 
   define "web" do
@@ -32,15 +39,17 @@ define "stopwatch" do
         java_args = [
           "-noverify",
           "-javaagent:#{ENV['JREBEL_HOME']}/jrebel.jar"
-	       ]
+              ]
       end
       Java.java "stopwatch.web.SampleServer",
         :classpath => [ compile.dependencies, compile.target,
                         test.compile.target, resources.sources ],
         :java_args => java_args || []
     end
+
   end
 end
 
+task "perf" => "stopwatch:core:perf"
 task "sample" => "stopwatch:web:sample"
 
