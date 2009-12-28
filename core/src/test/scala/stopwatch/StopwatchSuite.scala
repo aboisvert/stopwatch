@@ -169,8 +169,8 @@ class StopwatchSuite extends FunSuite with ShouldMatchers {
 
     var called = false
 
-    group.addListener { name: String =>
-      name should be === "foo"
+    group.addListener { snapshot =>
+      snapshot.name should be === "foo"
       called = true
     }
 

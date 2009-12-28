@@ -41,7 +41,7 @@ class StopwatchGroup(val name: String) {
 
   private var _intervals: Array[Long] = null
 
-  @volatile private var _listeners: List[String => Unit] = Nil
+  @volatile private var _listeners: List[StopwatchStatistic => Unit] = Nil
 
   /**
    * Range for temporal hit distribution analysis.
@@ -139,13 +139,23 @@ class StopwatchGroup(val name: String) {
   }
 
   /** Add a stopwatch listener */
-  def addListener(f: String => Unit): Unit = _listeners = f :: _listeners
+  def addListener(f: StopwatchStatistic => Unit): Unit = synchronized {
+    _listeners = f :: _listeners
+  }
 
   /** Remove a stopwatch listener */
-  def removeListener(f: String => Unit) { _listeners = _listeners filter { l => !(l eq f) } }
+  def removeListener(f: String => Unit): Unit = synchronized { 
+    _listeners = _listeners filter { l => !(l eq f) } 
+  }
 
   /** Notify all listeners that a Stopwatch has changed value */
-  private[stopwatch] def notifyListeners(name: String) = _listeners.foreach { _(name) }
+  private[stopwatch] def notifyListeners(stopwatch: StopwatchStatisticImpl) = {
+    val list = _listeners
+    if (!list.isEmpty) {
+      val snapshot = stopwatch.snapshot()
+      list.foreach { _(snapshot) }
+    }
+  }
 
   override def toString() = "StopwatchGroup('%s')".format(name)
 

@@ -164,7 +164,7 @@ final class StopwatchStatisticImpl(val group: StopwatchGroup, val name: String)
         else _distribution(interval) += 1
       }
     }
-    group.notifyListeners(name)
+    group.notifyListeners(this)
   }
 
   // override StopwatchStatistic.reset()
