@@ -1,13 +1,13 @@
 require 'buildr/scala'
 
+repositories.remote << "http://www.scala-tools.org/repo-snapshots"
+repositories.remote << "http://mirrors.ibiblio.org/pub/mirrors/maven2/"
+
 Java.load
 
 VERSION_NUMBER = "1.0-for-scala-#{Buildr::Scala.version_str}-SNAPSHOT"
 
 COPYRIGHT = "Copyright (C) 2009-2010 Alex Boisvert"
-
-repositories.remote << "http://www.scala-tools.org/repo-snapshots"
-repositories.remote << "http://www.ibiblio.org/maven2/"
 
 repositories.release_to[:username] ||= "boisvert"
 repositories.release_to[:url] ||= "sftp://repo.alexboisvert.org/var/www/repo.alexboisvert.org/maven2"
