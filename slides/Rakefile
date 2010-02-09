@@ -1,0 +1,44 @@
+
+def findReplace(file, find, replace)
+  buffer = File.new(file,'r').read.gsub(find,replace)
+  File.open(file,'w') { |fw| fw.write(buffer) }
+end
+
+file 'stopwatch.html' => ['stopwatch.textile'] do
+  system 'slideshow stopwatch.textile'
+
+  # load SHJS scripts
+  findReplace('stopwatch.html', "</head>",
+'  <link type="text/css" rel="stylesheet" href="shjs/sh_darkness.css">
+  <script type="text/javascript" src="shjs/sh_main.js"></script>
+  <script type="text/javascript" src="shjs/sh_scala.js"></script>
+  <script type="text/javascript">
+  $(document).ready(function() {
+    sh_highlightDocument();
+    var org_go = window.go;
+
+    function ago(dir){
+       org_go(dir);
+       sh_highlightDocument();
+    }
+  });
+
+  </script>
+</head>')
+
+  # document.onLoad()
+  findReplace('stopwatch.html', '<body>', '<body onload="sh_highlightDocument();">')
+
+  # document.onLoad()
+  findReplace('stopwatch.html', "<pre class='code'>", "<pre class='sh_scala'>")
+
+  # remove ugly border
+  findReplace('stopwatch.css', "border: silver thick groove;", '')
+
+
+  # remove ugly border
+  findReplace('s6/slides.core.js', "updatePermaLink();", 'updatePermaLink(); sh_highlightDocument();')
+end
+
+
+task :default => 'stopwatch.html'

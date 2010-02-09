@@ -1,0 +1,142 @@
+title: Stopwatch
+
+gradient-colors: green lime
+gradient-colors: #0e1f5b #3b5998
+gradient: top-bottom black black
+code-theme: blackboard
+code-line-numbers: false
+code-theme: all-hallows-eve
+encoding: UTF-8
+
+h1{color:red}. Stopwatch
+
+Small Scala library to monitor your production Scala (and other JVM) applications
+
+  * Find application performance bottlenecks
+  * Measure user/application interactions
+  * Assess application scalability
+
+Github "http://github.com/aboisvert/stopwatch":http://github.com/aboisvert/stopwatch
+* Scala 2.7.4+ / 2.8+  (source compatible)
+* JVM 1.5+
+* No 3rd-party library dependencies.
+* Apache License v2.0
+
+h1. Instrumenting your code
+
+{{{
+import stopwatch.Stopwatch
+
+Stopwatch("someName") {
+  // code being timed
+  doSomething()
+  somethingElse()
+}
+}}}
+
+h1. Statistics
+
+* Hits
+* Execution times
+(total, average, minimum, maximum, std dev, distribution)
+* Simultaneous requests / concurrent threads
+* Errors and exceptions
+
+(All over a given time interval)
+
+h1. Async / non-inlined code
+
+{{{
+// get a stopwatch instance
+val stopwatch = Stopwatch.start("graphTraversal")
+
+// and later, elsewhere in your code
+// use the same instance to signal completion
+stopwatch.stop()
+
+// if there was an error, use error() instead
+stopwatch.error()
+}}}
+
+h1. StopwatchGroup
+
+{{{
+val incomingRequests = new StopwatchGroup("Incoming Requests")
+
+// configure
+incomingRequests.enabled = true
+incomingRequests.range = StopwatchRange(0 seconds, 30 seconds, 1000 millis)
+
+// usage for code blocks
+incomingRequests(clientId) {
+  doStuffForClient()
+}
+}}}
+
+h1. Displaying statistics
+
+{{{
+scala> val stats = Stopwatch.snapshot("test")
+
+// summary only
+scala> s.toShortString
+res3: String = Stopwatch "test" {hit=2, min=1838ms, avg=2148ms, max=2457ms,
+total=4296ms, stdDev=437ms}
+
+// includes thread info
+scala> s.toMediumString
+res4: String = Stopwatch "test" {hits=2, throughput=0.814/s, minTime=1838ms,
+avgTime=2148ms, maxTime=2457ms, totalTime=4296ms, stdDev=437ms,
+currentThreads=0, avgThreads=1.50, maxThreads=2, first=2009-12-21 11:22:54.708 PST,
+last=2009-12-21 11:22:57.166 PST}
+}}}
+
+h1. Displaying statistics
+
+{{{
+
+// includes threads + time distribution
+scala> s.toLongString
+res5: String = Stopwatch "test" {hits=2, throughput=0.814/s, minTime=1838ms,
+avgTime=2148ms, maxTime=2457ms, totalTime=4296ms, stdDev=437ms,
+currentThreads=0, avgThreads=1.50, maxThreads=2, first=2009-12-21 11:22:54.708 PST,
+last=2009-12-21 11:22:57.166 PST} Distribution {under=0, 0-1000ms: 0,
+1000-2000ms: 1, 2000-3000ms: 1, 3000-4000ms: 0, 4000-5000ms: 0, 5000-6000ms: 0,
+6000-7000ms: 0, 7000-8000ms: 0, 8000-9000ms: 0, 9000-10000ms: 0, over=0}
+
+}}}
+
+h1. Embedded Web Server
+
+{{{
+val server = new stopwatch.web.Server
+
+// register StopwatchGroups you want to monitor
+server.groups ::= Stopwatch
+server.groups ::= myStopwatchGruop
+
+// configure port number
+server.port = 9999
+
+server.start()
+}}}
+
+h1. Demo!
+
+{{{
+% scala -cp stopwatch-1.x.jar:stopwatch-web-1.x.jar stopwatch.web.SampleServer
+}}}
+
+Go to "http://localhost:9999":http://localhost:9999
+
+h1. TODO's / Roadmap
+
+* Improve web UI
+* Distributed monitoring
+* JMX
+* JVM agent
+
+h1. The End.
+
+Website "http://aboisvert.github.com/stopwatch":http://aboisvert.github.com/stopwatch
+

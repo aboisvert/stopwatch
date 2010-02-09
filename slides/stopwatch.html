@@ -1,0 +1,234 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+<head>
+   
+
+	  <title>Stopwatch</title>
+
+<!-- configuration parameters -->
+<meta name="defaultView" content="slideshow">
+<!-- style sheet links -->
+<link rel="stylesheet" href="stopwatch.css" type="text/css" media="projection" id="slideProj">
+<link rel="stylesheet" href="s6/outline.css" type="text/css" media="screen" id="outlineStyle">
+<link rel="stylesheet" href="s6/print.css" type="text/css" media="print" id="slidePrint">
+
+<!-- S6 JS -->
+<script src="s6/jquery.js" type="text/javascript"></script>
+<script src="s6/slides.js" type="text/javascript"></script>
+
+  
+
+  <link type="text/css" rel="stylesheet" href="shjs/sh_darkness.css">
+  <script type="text/javascript" src="shjs/sh_main.js"></script>
+  <script type="text/javascript" src="shjs/sh_scala.js"></script>
+  <script type="text/javascript">
+  $(document).ready(function() {
+    sh_highlightDocument();
+    var org_go = window.go;
+
+    function ago(dir){
+       org_go(dir);
+       sh_highlightDocument();
+    }
+  });
+
+  </script>
+</head>
+<body onload="sh_highlightDocument();">
+
+<div class="layout">
+  
+  <div class="background">  
+    <object data="stopwatch.svg" width="100%" height="100%">
+		</object>
+  </div>   
+  
+<div id="controls"><!-- DO NOT EDIT --></div>
+<div id="currentSlide"><!-- DO NOT EDIT --></div>
+<div id="header"></div>
+<div id="footer">
+<h1></h1>
+<h2></h2>
+</div>
+
+      <div id='microsoft'>       
+        <p>
+          Microsoft's Internet Explorer browser
+            has no built-in vector graphics machinery
+             required for "loss-free" gradient background themes.
+        </p>        
+        <p>
+          Please upgrade to a better browser
+           such as <a href='http://getfirefox.com'>Firefox</a>, <a href='http://www.opera.com/download'>Opera</a>,
+            <a href='http://google.com/chrome'>Chrome</a>, <a href='http://apple.com/safari/download'>Safari</a> or others
+            with built-in vector graphics machinery and much more.
+          
+          (Learn more or post questions or comments
+              at the <a href='http://slideshow.rubyforge.org'>Slide Show (S9)</a>
+            project site. Thanks!)
+        </p>             
+    </div>
+</div>
+
+<div class="presentation">
+<div class='slide'>
+
+<h1 style="color:red;">Stopwatch</h1>
+<p>Small Scala library to monitor your production Scala (and other JVM) applications</p>
+<ul>
+	<li>Find application performance bottlenecks</li>
+	<li>Measure user/application interactions</li>
+	<li>Assess application scalability</li>
+</ul>
+<p>Github <a href="http://github.com/aboisvert/stopwatch">http://github.com/aboisvert/stopwatch</a></p>
+<ul>
+	<li>Scala 2.7.4+ / 2.8+  (source compatible)</li>
+	<li>JVM 1.5+</li>
+	<li>No 3rd-party library dependencies.</li>
+	<li>Apache License v2.0</li>
+</ul>
+
+
+</div><div class='slide'>
+
+<h1>Instrumenting your code</h1>
+<pre class='sh_scala'>
+import stopwatch.Stopwatch
+
+Stopwatch("someName") {
+  // code being timed
+  doSomething()
+  somethingElse()
+}
+</pre>
+
+
+</div><div class='slide'>
+
+<h1>Statistics</h1>
+<ul>
+	<li>Hits</li>
+	<li>Execution times
+(total, average, minimum, maximum, std dev, distribution)</li>
+	<li>Simultaneous requests / concurrent threads</li>
+	<li>Errors and exceptions</li>
+</ul>
+<p>(All over a given time interval)</p>
+
+
+</div><div class='slide'>
+
+<h1>Async / non-inlined code</h1>
+<pre class='sh_scala'>
+// get a stopwatch instance
+val stopwatch = Stopwatch.start("graphTraversal")
+
+// and later, elsewhere in your code
+// use the same instance to signal completion
+stopwatch.stop()
+
+// if there was an error, use error() instead
+stopwatch.error()
+</pre>
+
+
+</div><div class='slide'>
+
+<h1>StopwatchGroup</h1>
+<pre class='sh_scala'>
+val incomingRequests = new StopwatchGroup("Incoming Requests")
+
+// configure
+incomingRequests.enabled = true
+incomingRequests.range = StopwatchRange(0 seconds, 30 seconds, 1000 millis)
+
+// usage for code blocks
+incomingRequests(clientId) {
+  doStuffForClient()
+}
+</pre>
+
+
+</div><div class='slide'>
+
+<h1>Displaying statistics</h1>
+<pre class='sh_scala'>
+scala&gt; val stats = Stopwatch.snapshot("test")
+
+// summary only
+scala&gt; s.toShortString
+res3: String = Stopwatch "test" {hit=2, min=1838ms, avg=2148ms, max=2457ms,
+total=4296ms, stdDev=437ms}
+
+// includes thread info
+scala&gt; s.toMediumString
+res4: String = Stopwatch "test" {hits=2, throughput=0.814/s, minTime=1838ms,
+avgTime=2148ms, maxTime=2457ms, totalTime=4296ms, stdDev=437ms,
+currentThreads=0, avgThreads=1.50, maxThreads=2, first=2009-12-21 11:22:54.708 PST,
+last=2009-12-21 11:22:57.166 PST}
+</pre>
+
+
+</div><div class='slide'>
+
+<h1>Displaying statistics</h1>
+<pre class='sh_scala'>
+
+// includes threads + time distribution
+scala&gt; s.toLongString
+res5: String = Stopwatch "test" {hits=2, throughput=0.814/s, minTime=1838ms,
+avgTime=2148ms, maxTime=2457ms, totalTime=4296ms, stdDev=437ms,
+currentThreads=0, avgThreads=1.50, maxThreads=2, first=2009-12-21 11:22:54.708 PST,
+last=2009-12-21 11:22:57.166 PST} Distribution {under=0, 0-1000ms: 0,
+1000-2000ms: 1, 2000-3000ms: 1, 3000-4000ms: 0, 4000-5000ms: 0, 5000-6000ms: 0,
+6000-7000ms: 0, 7000-8000ms: 0, 8000-9000ms: 0, 9000-10000ms: 0, over=0}
+
+</pre>
+
+
+</div><div class='slide'>
+
+<h1>Embedded Web Server</h1>
+<pre class='sh_scala'>
+val server = new stopwatch.web.Server
+
+// register StopwatchGroups you want to monitor
+server.groups ::= Stopwatch
+server.groups ::= myStopwatchGruop
+
+// configure port number
+server.port = 9999
+
+server.start()
+</pre>
+
+
+</div><div class='slide'>
+
+<h1>Demo!</h1>
+<pre class='sh_scala'>
+% scala -cp stopwatch-1.x.jar:stopwatch-web-1.x.jar stopwatch.web.SampleServer
+</pre>
+<p>Go to <a href="http://localhost:9999">http://localhost:9999</a></p>
+
+
+</div><div class='slide'>
+
+<h1>TODO&#8217;s / Roadmap</h1>
+<ul>
+	<li>Improve web UI</li>
+	<li>Distributed monitoring</li>
+	<li>JMX</li>
+	<li>JVM agent</li>
+</ul>
+
+
+</div><div class='slide'>
+
+<h1>The End.</h1>
+<p>Website <a href="http://aboisvert.github.com/stopwatch">http://aboisvert.github.com/stopwatch</a></p>
+
+</div>
+</div> <!-- presentation -->
+</body>
+</html>
