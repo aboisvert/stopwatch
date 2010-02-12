@@ -13,6 +13,8 @@ repositories.release_to[:username] ||= "boisvert"
 repositories.release_to[:url] ||= "sftp://repo.alexboisvert.org/var/www/repo.alexboisvert.org/maven2"
 repositories.release_to[:permissions] ||= 0664
 
+Project.local_task :run
+
 desc "Stopwatch project"
 define "stopwatch" do
   project.version = VERSION_NUMBER
@@ -28,6 +30,7 @@ define "stopwatch" do
                         test.compile.target, resources.sources ],
         :java_args => ["-server"]
     end
+    task :run => :perf
   end
 
   define "web" do
