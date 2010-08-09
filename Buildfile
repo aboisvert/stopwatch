@@ -5,12 +5,12 @@ repositories.remote << "http://mirrors.ibiblio.org/pub/mirrors/maven2/"
 
 Java.load
 
-VERSION_NUMBER = "1.0-for-scala-#{Buildr::Scala.version_str}-SNAPSHOT"
+VERSION_NUMBER = "1.0.1-SNAPSHOT"
 
 COPYRIGHT = "Copyright (C) 2009-2010 Alex Boisvert"
 
 repositories.release_to[:username] ||= "boisvert"
-repositories.release_to[:url] ||= "sftp://repo.alexboisvert.org/var/www/repo.alexboisvert.org/maven2"
+repositories.release_to[:url] ||= "/tmp/maven2"
 repositories.release_to[:permissions] ||= 0664
 
 Project.local_task :run
@@ -42,7 +42,7 @@ define "stopwatch" do
         java_args = [
           "-noverify",
           "-javaagent:#{ENV['JREBEL_HOME']}/jrebel.jar"
-              ]
+        ]
       end
       Java.java "stopwatch.web.SampleServer",
         :classpath => [ compile.dependencies, compile.target,
