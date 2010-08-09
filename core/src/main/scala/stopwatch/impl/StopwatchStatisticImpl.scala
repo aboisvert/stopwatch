@@ -268,7 +268,7 @@ final class StopwatchStatisticImpl(val group: StopwatchGroup, val name: String)
      "minTime=%dms, avgTime=%dms, maxTime=%dms, totalTime=%dms, stdDev=%dms, " +
      "currentThreads=%d, avgThreads=%.2f, maxThreads=%d, " +
      "first=%s, last=%s}" ).format(
-      name, _hits, throughput getOrElse -1L, _errors,
+      name, _hits, throughput getOrElse -1.0, _errors,
       _minTime/millis, _averageTime/millis, _maxTime/millis, _totalTime/millis, _standardDeviationTime/millis,
       _currentThreads, _averageThreads, _maxThreads,
       formatTime(firstAccessTime), formatTime(_lastAccessTime))
