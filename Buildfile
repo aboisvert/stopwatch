@@ -1,4 +1,6 @@
 require 'buildr/scala'
+require 'buildr/groovy'
+#require 'buildr/clojure'
 
 repositories.remote << "http://www.scala-tools.org/repo-snapshots"
 repositories.remote << "http://mirrors.ibiblio.org/pub/mirrors/maven2/"
@@ -24,33 +26,19 @@ define "stopwatch" do
   define "core" do
     package(:jar, :id => 'stopwatch')
 
-    task "perf" do
-      Java.java "stopwatch.StopwatchPerformanceSuiteRunner",
-        :classpath => [ test.compile.dependencies, test.compile.target,
-                        test.compile.target, resources.sources ],
-        :java_args => ["-server"]
-    end
-    task :run => :perf
+    run.using :main => ["stopwatch.StopwatchPerformanceSuiteRunner", "-t"],
+              :java_args => ["-server"]
   end
 
   define "web" do
     compile.with projects("core")
     package(:jar)
 
-    task "sample" do
-      if ENV["JREBEL_HOME"]
-        java_args = [
-          "-noverify",
-          "-javaagent:#{ENV['JREBEL_HOME']}/jrebel.jar"
-        ]
-      end
-      Java.java "stopwatch.web.SampleServer",
-        :classpath => [ compile.dependencies, compile.target,
-                        test.compile.target, resources.sources ],
-        :java_args => java_args || []
-    end
-
+    run.using :main => "stopwatch.web.SampleServer"
   end
+
+  doc.using :scaladoc
+  doc.from projects('core', 'web')
 end
 
 task "perf" => "stopwatch:core:perf"
