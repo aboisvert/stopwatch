@@ -54,7 +54,7 @@ trait Stopwatch {
       val result = f
       stop()
       result
-    } catch { case e =>
+    } catch { case e: Throwable =>
       error()
       throw e
     }

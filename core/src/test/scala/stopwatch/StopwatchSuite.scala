@@ -21,10 +21,7 @@ import org.scalatest.matchers.ShouldMatchers
 
 import stopwatch.TimeUnit._
 
-object StopwatchSuiteRunner {
-  def main(args: Array[String]) = (new StopwatchSuite).execute
-}
-
+@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class StopwatchSuite extends FunSuite with ShouldMatchers {
   implicit def timeToNanos(t: TimeUnit) = t.toNanos
 

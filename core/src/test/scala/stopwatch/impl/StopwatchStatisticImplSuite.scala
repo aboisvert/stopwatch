@@ -24,10 +24,7 @@ import stopwatch.StopwatchRange
 import stopwatch.TimeUnit
 import stopwatch.TimeUnit._
 
-object StopwatchStatisticImplSuiteRunner {
-  def main(args: Array[String]) = (new StopwatchStatisticImplSuite).execute
-}
-
+@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class StopwatchStatisticImplSuite extends FunSuite with ShouldMatchers {
   implicit def timeToNanos(t: TimeUnit) = t.toNanos
 
