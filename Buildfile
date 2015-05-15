@@ -12,7 +12,7 @@ repositories.remote << "http://mirrors.ibiblio.org/pub/mirrors/maven2/"
 
 Java.load
 
-VERSION_NUMBER = "1.0.1"
+VERSION_NUMBER = "2.0.1"
 
 COPYRIGHT = "Copyright (C) 2009-2010 Alex Boisvert"
 
@@ -23,7 +23,7 @@ repositories.release_to[:permissions] ||= 0664
 Project.local_task :run
 
 desc "Stopwatch project"
-define "stopwatch_#{Buildr::Scala.version}" do
+define "stopwatch2_#{Buildr::Scala.version}" do
   project.version = VERSION_NUMBER
   project.group = "stopwatch"
   manifest["Implementation-Vendor"] = COPYRIGHT

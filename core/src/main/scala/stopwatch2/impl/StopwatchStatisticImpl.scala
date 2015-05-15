@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package stopwatch.impl
+package stopwatch2.impl
 
-import stopwatch.StopwatchGroup
-import stopwatch.StopwatchRange
-import stopwatch.StopwatchStatistic
+import stopwatch2._
+import scala.concurrent.duration._
 
 /**
  * Time statistics for a stopwatch.
@@ -27,7 +26,6 @@ final class StopwatchStatisticImpl(val group: StopwatchGroup, val name: String)
   extends StopwatchStatistic
   with Cloneable
 {
-  private val millis = 1000000 // used for nanos => milliseconds conversion
 
   /** Whether the stopwatch is enabled */
   @volatile var enabled: Boolean = true // enabled by default
@@ -39,19 +37,19 @@ final class StopwatchStatisticImpl(val group: StopwatchGroup, val name: String)
   private var _errors: Long = 0
 
   /** Total time, represents the elapsed time while the stopwatch was started. */
-  private var _totalTime: Long = 0
+  private var _totalTime: FiniteDuration = Duration.Zero
 
   /** Minimum time spent in the stopwatch. */
-  private var _minTime = -1L
+  private var _minTime: Duration = Duration.Undefined
 
   /** Maximum time spent in the stopwatch. */
-  private var _maxTime = -1L
+  private var _maxTime: Duration = Duration.Undefined
 
   /** Average time spent in the stopwatch. */
-  private var _averageTime: Long = 0
+  private var _averageTime: Duration = Duration.Undefined
 
   /** Standard deviation of time spent in the stopwatch. */
-  private var _standardDeviationTime: Long = 0
+  private var _standardDeviationTime: Duration = Duration.Zero
 
   /** Maximum number of threads operating on this stopwatch at once. */
   private var _maxThreads: Int = 0
@@ -68,36 +66,31 @@ final class StopwatchStatisticImpl(val group: StopwatchGroup, val name: String)
   /** Time when stopwatch was last accessed. */
   private var _lastAccessTime: Option[Long] = None
 
-  /**
-   * Hit distribution per interval, as defined by range
-   */
-  private var _distribution: Array[Long] = null
-
-  /** Number of hits under range. */
-  private var _hitsUnderRange = 0L
-
-  /** Number of hits over range. */
-  private var _hitsOverRange = 0L
-
   /** Used to calculate the average number of threads */
   private var _totalThreadsDuringStart: Long = 0
 
   /** Used to calculate the standard deviation. */
   private var _sumOfSquares: Double = 0.0d
 
-  /** Reference to group's range object to track change. */
-  private var _range: StopwatchRange = null
+  /** PSquared instances for each percentile */
+  private var _psquared: Array[PSquared] = initPSquared()
 
-  /* initialization */
-  {
-    updateRange
+  private def initPSquared(): Array[PSquared] = {
+    if (group.percentiles exists { p => p >= 100.0f || p <= 0.0f }) {
+      throw new IllegalArgumentException("Percentiles must be 0% < p < 100%: " + group.percentiles)
+    }
+    val array = new Array[PSquared](group.percentiles.length)
+    var i = 0
+    while (i < array.length) {
+      array(i) = new PSquared(group.percentiles(i) / 100.0f)
+      i += 1
+    }
+    array
   }
 
   def hits = _hits
 
   def errors = _errors
-
-  def range = group.range
 
   def totalTime = _totalTime
 
@@ -119,14 +112,11 @@ final class StopwatchStatisticImpl(val group: StopwatchGroup, val name: String)
 
   def lastAccessTime = _lastAccessTime
 
-  def distribution: Seq[Long] = {
-    if (range eq null) return Nil
-    if (_distribution eq null) List.make(range.intervals, 0) else _distribution
+  def percentiles: IndexedSeq[Percentile] = {
+    (group.percentiles.iterator zip _psquared.iterator)
+      .map { case (p, psquared) => Percentile(p, psquared.pValue.nanos) }
+      .to[IndexedSeq]
   }
-
-  def hitsUnderRange = _hitsUnderRange
-
-  def hitsOverRange = _hitsOverRange
 
   /**
    * Update statistics following stopwatch start event.
@@ -143,25 +133,22 @@ final class StopwatchStatisticImpl(val group: StopwatchGroup, val name: String)
   /**
    * Update statistics following stopwatch stop event.
    */
-  private[impl] def notifyStop(currentTime: Long, elapsed: Long, error: Boolean) = {
+  private[impl] def notifyStop(currentTime: Long, elapsed: FiniteDuration, error: Boolean) = {
     synchronized {
       _currentThreads -= 1
       _totalTime += elapsed
       _lastAccessTime = Some(currentTime)
-      _sumOfSquares += elapsed*elapsed
+      _sumOfSquares += elapsed.toNanos * elapsed.toNanos
 
       if (error) _errors += 1
 
-      if (_maxTime < elapsed) _maxTime = elapsed
-      if ((_minTime > elapsed) || (_minTime == -1L)) _minTime = elapsed
+      if (!_maxTime.isFinite || _maxTime < elapsed) _maxTime = elapsed
+      if (!_minTime.isFinite || _minTime > elapsed) _minTime = elapsed
 
-      updateRange
-
-      if (!(range eq null)) {
-        val interval = range.interval(elapsed)
-        if (interval < 0) _hitsUnderRange += 1
-        else if (interval >= range.intervals) _hitsOverRange += 1
-        else _distribution(interval) += 1
+      var i = 0
+      while (i < _psquared.length) {
+        _psquared(i).accept(elapsed.toNanos)
+        i += 1
       }
     }
     group.notifyListeners(this)
@@ -171,18 +158,15 @@ final class StopwatchStatisticImpl(val group: StopwatchGroup, val name: String)
   def reset() = synchronized {
     _hits = 0
     _errors = 0
-    _totalTime = 0
-    _minTime = -1
-    _maxTime = -1
+    _totalTime = Duration.Zero
+    _minTime = Duration.Undefined
+    _maxTime = Duration.Undefined
     _firstAccessTime = None
     _lastAccessTime  = None
     _maxThreads = 0
-    _range = null
-    _distribution = null
-    _hitsUnderRange = 0
-    _hitsOverRange = 0
     _totalThreadsDuringStart = 0
     _sumOfSquares = 0
+    _psquared = initPSquared()
   }
 
   /** Take a snapshot of the StopwatchStatistic. */
@@ -193,7 +177,7 @@ final class StopwatchStatisticImpl(val group: StopwatchGroup, val name: String)
     // calculate average threads & average time
     if (snapshot._hits == 0) {
       snapshot._averageThreads = 0.0f
-      snapshot._averageTime = 0L
+      snapshot._averageTime = Duration.Undefined
     } else {
       snapshot._averageThreads = snapshot._totalThreadsDuringStart / snapshot._hits
       snapshot._averageTime = snapshot._totalTime / snapshot._hits
@@ -204,34 +188,23 @@ final class StopwatchStatisticImpl(val group: StopwatchGroup, val name: String)
             numerator = sum(xi^2) - sum(xi)^2/n
             std_dev = square_root(numerator / (n-1))
      */
-    snapshot._standardDeviationTime = 0
+    snapshot._standardDeviationTime = Duration.Undefined
     if (snapshot._hits != 0) {
-      val sumOfX: Double = snapshot._totalTime
+      val sumOfX: Double = snapshot._totalTime.toNanos
       val n = snapshot._hits
       val nMinus1: Double = (n-1) max 1
       val numerator: Double = snapshot._sumOfSquares - ((sumOfX * sumOfX) / n)
-      snapshot._standardDeviationTime = java.lang.Math.sqrt(numerator.toDouble / nMinus1).toLong
+      snapshot._standardDeviationTime = java.lang.Math.sqrt(numerator.toDouble / nMinus1).toLong.nanos
     }
     snapshot
-  }
-
-  private def updateRange() {
-    val range = group.range
-    if (!(_range eq range)) {
-      _range = range
-      if (range == null) _distribution = null
-      else _distribution = new Array[Long](range.intervals)
-      _hitsUnderRange = 0
-      _hitsOverRange = 0
-    }
   }
 
   override def clone() = synchronized {
     val cloned = super.clone().asInstanceOf[StopwatchStatisticImpl]
 
     // the default clone of an array is shallow.
-    if (_distribution != null) {
-      cloned._distribution = _distribution.toArray // make a copy
+    if (_psquared != null) {
+      cloned._psquared = _psquared.toArray // make a copy
     }
     cloned
   }
@@ -245,11 +218,16 @@ final class StopwatchStatisticImpl(val group: StopwatchGroup, val name: String)
 
   override def toString() = toMediumString
 
+  private def toMillis(d: Duration) = {
+    if (d.isFinite) d.toMillis + "ms"
+    else "N/A"
+  }
+
   /** Returns a short string representation of stopwatch statistics */
   def toShortString = {
-    "Stopwatch \"%s\" {hits=%d, errors=%d, min=%dms, avg=%dms, max=%dms, total=%dms, stdDev=%dms}".
-      format(name, _hits, _errors, _minTime/millis, _averageTime/millis, _maxTime/millis,
-             _totalTime/millis, _standardDeviationTime/millis)
+    "Stopwatch \"%s\" {hits=%d, errors=%d, min=%s, avg=%s, max=%s, total=%s, stdDev=%s}".
+      format(name, _hits, _errors, toMillis(_minTime), toMillis(_averageTime), toMillis(_maxTime),
+             toMillis(_totalTime), toMillis(_standardDeviationTime))
   }
 
   /** Returns a medium-length string representation of stopwatch statistics */
@@ -264,12 +242,12 @@ final class StopwatchStatisticImpl(val group: StopwatchGroup, val name: String)
 
     def formatTime(time: Option[Long]) = time.map(dateFormat.format(_)) getOrElse "N/A"
 
-    ("Stopwatch \"%s\" {hits=%d, throughput=%.3f/s, errors=%d," +
-     "minTime=%dms, avgTime=%dms, maxTime=%dms, totalTime=%dms, stdDev=%dms, " +
+    ("Stopwatch \"%s\" {hits=%d, throughput=%.3f/s, errors=%d, " +
+     "minTime=%s, avgTime=%s, maxTime=%s, totalTime=%s, stdDev=%s, " +
      "currentThreads=%d, avgThreads=%.2f, maxThreads=%d, " +
      "first=%s, last=%s}" ).format(
       name, _hits, throughput getOrElse -1.0, _errors,
-      _minTime/millis, _averageTime/millis, _maxTime/millis, _totalTime/millis, _standardDeviationTime/millis,
+      toMillis(_minTime), toMillis(_averageTime), toMillis(_maxTime), toMillis(_totalTime), toMillis(_standardDeviationTime),
       _currentThreads, _averageThreads, _maxThreads,
       formatTime(firstAccessTime), formatTime(_lastAccessTime))
   }
@@ -278,11 +256,9 @@ final class StopwatchStatisticImpl(val group: StopwatchGroup, val name: String)
    *  including time distribution.
    */
   def toLongString = {
-    toMediumString + (if (_range eq null) "" else {
-      _range.intervalsAsTuple.map( { case (lower, upper) =>
-         (lower/millis)+"-"+(upper/millis)+"ms: "+_distribution(_range.interval(lower)) }
-       ).mkString(" Distribution {under=%d, ", ", ", ", over=%d}").
-         format(_hitsUnderRange, _hitsOverRange)
-    })
+    toMediumString +
+      " Percentiles {" +
+      (percentiles map { p => "(%.2f%%, %s)" format (p.p, toMillis(p.pValue)) }).mkString(", ") +
+      "}"
   }
 }

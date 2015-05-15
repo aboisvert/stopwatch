@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-package stopwatch.web
+package stopwatch2.web
 
-import stopwatch.Stopwatch
-import stopwatch.StopwatchGroup
-import stopwatch.StopwatchRange
-import stopwatch.TimeUnit._
+import stopwatch2._
 
 object SampleServer {
   def main(args: Array[String]) {
@@ -43,11 +40,9 @@ class Sample {
     server.productionMode = false // print error stack traces
 
     server.stopwatch.enabled = true
-    server.stopwatch.range = StopwatchRange(0 millis, 1000 millis, 5 millis)
 
     val group2 = new StopwatchGroup("Lorem Ipsum")
     group2.enabled = true
-    group2.range = StopwatchRange(0 millis, 1000 millis, 10 millis)
 
     server.groups ::= Stopwatch
     server.groups ::= group2

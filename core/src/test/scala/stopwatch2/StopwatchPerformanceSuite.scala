@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-package stopwatch
+package stopwatch2
 
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 
-import stopwatch.TimeUnit._
+import scala.concurrent.duration._
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class StopwatchPerformanceSuite extends FunSuite with ShouldMatchers {
-  implicit def timeToNanos(t: TimeUnit) = t.toNanos
-
   val disabled = new StopwatchGroup("disabled")
 
   val performance = {
@@ -57,7 +55,7 @@ class StopwatchPerformanceSuite extends FunSuite with ShouldMatchers {
       if (loops == n/2) performance.reset("DisabledStopwatch")
     }
     val s = performance.snapshot("DisabledStopwatch")
-    Console println ("Disabled cost: %dns".format(s.totalTime/(n*m)))
+    Console println ("Disabled cost: %s".format(s.totalTime/(n*m)))
   }
 
   test("Performance of enabled stopwatch") {
@@ -78,6 +76,6 @@ class StopwatchPerformanceSuite extends FunSuite with ShouldMatchers {
       if (loops == n/2) performance.reset("EnabledStopwatch")
     }
     val s = performance.snapshot("EnabledStopwatch")
-    Console println ("Enabled cost: %dns".format(s.totalTime/(n*m)))
+    Console println ("Enabled cost: %s".format(s.totalTime/(n*m)))
   }
 }

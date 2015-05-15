@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-package stopwatch
+package stopwatch2
+
+import scala.concurrent.duration._
+
+case class Percentile(p: Float, pValue: Duration)
 
 /**
  * Default Stopwatch group to create stopwatches.

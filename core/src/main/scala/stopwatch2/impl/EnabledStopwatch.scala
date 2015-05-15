@@ -1,22 +1,23 @@
 /*
- *  Copyright 2009-2010 Alex Boisvert
+ *  Copyright 2009-2015 Alex Boisvert
  *
- *  Licensed under the Apache License, Version 2.0 (the "License"); 
- *  you may not use this file except in compliance with the License. 
- *  You may obtain a copy of the License at 
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, 
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
 
-package stopwatch.impl
+package stopwatch2.impl
 
-import stopwatch.Stopwatch
+import stopwatch2._
+import scala.concurrent.duration._
 
 /**
  * Enabled stopwatch that collects statistics.
@@ -38,19 +39,19 @@ final class EnabledStopwatch(val name: String, private var _stats: StopwatchStat
     val end = System.nanoTime
     val currentTime = System.currentTimeMillis
     val elapsed = end - _start
-    _stats.notifyStop(currentTime, elapsed, false)
+    _stats.notifyStop(currentTime, elapsed.nanos, false)
   }
 
   def error() {
     val end = System.nanoTime
     val currentTime = System.currentTimeMillis
     val elapsed = end - _start
-    _stats.notifyStop(currentTime, elapsed, true)
+    _stats.notifyStop(currentTime, elapsed.nanos, true)
   }
 
   val enabled = true
 
-  override def hashCode = name.hashCode 
+  override def hashCode = name.hashCode
 
   override def equals(other: Any): Boolean = other match {
     case x: Stopwatch => name == x.name

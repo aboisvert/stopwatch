@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-package stopwatch
+package stopwatch2
 
-import stopwatch.impl.DisabledStopwatch
-import stopwatch.impl.EnabledStopwatch
-import stopwatch.impl.StopwatchStatisticImpl
+import stopwatch2.impl._
 
 /**
  * Stopwatch group: used to initialize, start, dispose and reset stopwatches.
  * <p>
- * Stopwatches in the same group share the same distribution range.
+ * Stopwatches in the same group share the same percentile distribution.
  */
 class StopwatchGroup(val name: String) {
 
@@ -43,20 +41,8 @@ class StopwatchGroup(val name: String) {
 
   @volatile private var _listeners: List[StopwatchStatistic => Unit] = Nil
 
-  /**
-   * Range for temporal hit distribution analysis.
-   * <p>
-   * StopwatchRange(0, 30000, 200) would yield the following distribution intervals:
-   * <code>
-   *      0-199 ms
-   *    200-399 ms
-   *    400-599 ms
-   *    ... ...
-   *  29600-29799 ms
-   *  29800-29999 ms
-   * </code>
-   */
-  @volatile var range: StopwatchRange = null
+  /** Percentiles to track. */
+  @volatile var percentiles: Array[Float] = Array(0.1f, 1.0f, 10.0f, 20.0f, 30.0f, 40.0f, 50.0f, 60.0f, 70.0f, 90.0f, 99.0f, 99.9f)
 
   /** Measure the elapsed time spent during execution of the provided function. */
   def apply[T](name: String)(f: => T): T = {
@@ -65,7 +51,7 @@ class StopwatchGroup(val name: String) {
   }
 
   /** Return a named stopwatch */
-  private[stopwatch] def get(name: String): Stopwatch = {
+  private[stopwatch2] def get(name: String): Stopwatch = {
     if (!enabled) {
       return DisabledStopwatch
     }
@@ -87,11 +73,18 @@ class StopwatchGroup(val name: String) {
 
   /** Return a snapshot of the statistics for a given stopwatch. */
   def snapshot(name: String): StopwatchStatistic = {
-    ifStats(name, _.snapshot, new StopwatchStatisticImpl(this, name))
+    val stats = _stats.get(name)
+    if (stats != null) return stats.snapshot
+    else new StopwatchStatisticImpl(this, name)
   }
 
   /** Reset statistics for a given stopwatch. */
-  def reset(name: String) = ifStats(name, _.reset(), {})
+  def reset(name: String) = {
+    val stats = _stats.get(name)
+    if (stats != null) {
+      stats.reset()
+    }
+  }
 
   /** Reset all stopwatches. */
   def resetAll() {
@@ -108,10 +101,15 @@ class StopwatchGroup(val name: String) {
   }
 
   /** Disable a stopwatch. */
-  def disable(name: String): Unit = ifStats(name, _.enabled = false, {})
+  def disable(name: String): Unit = {
+    val stats = _stats.get(name)
+    if (stats != null) {
+      stats.enabled = false
+    }
+  }
 
   /** Get the list of known stopwatches. */
-  def names: Set[String] = _stats.keySet
+  def names: Set[String] = _stats.keySet.toSet
 
   /** Dispose of a given stopwatch. */
   def dispose(name: String) = _stats.remove(name)
@@ -119,23 +117,13 @@ class StopwatchGroup(val name: String) {
   /** Dispose of all stopwatches. */
   def disposeAll() = _stats.clear()
 
-  /** if ... else ... condition helper */
-  private def ifStats[T](name: String, notNull: StopwatchStatisticImpl => T, ifNull: => T) = {
-    val stats = _stats.get(name)
-    if (stats == null) {
-      ifNull
-    } else {
-      notNull(stats)
-    }
-  }
-
   /** Return existing statistics or create new statistics for given stopwatch */
   private def getOrCreate(name: String): StopwatchStatisticImpl = synchronized {
-    ifStats(name, { x => x }, {
-      val newStats = new StopwatchStatisticImpl(this, name)
-      _stats.put(name, newStats)
-      newStats
-    })
+    val stats = _stats.get(name)
+    if (stats != null) return stats
+    val newStats = new StopwatchStatisticImpl(this, name)
+    _stats.put(name, newStats)
+    newStats
   }
 
   /** Add a stopwatch listener */
@@ -144,12 +132,12 @@ class StopwatchGroup(val name: String) {
   }
 
   /** Remove a stopwatch listener */
-  def removeListener(f: String => Unit): Unit = synchronized { 
-    _listeners = _listeners filter { l => !(l eq f) } 
+  def removeListener(f: String => Unit): Unit = synchronized {
+    _listeners = _listeners filter { l => !(l eq f) }
   }
 
   /** Notify all listeners that a Stopwatch has changed value */
-  private[stopwatch] def notifyListeners(stopwatch: StopwatchStatisticImpl) = {
+  private[stopwatch2] def notifyListeners(stopwatch: StopwatchStatisticImpl) = {
     val list = _listeners
     if (!list.isEmpty) {
       val snapshot = stopwatch.snapshot()

@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-package stopwatch
+package stopwatch2
+
+import scala.concurrent.duration._
 
 /**
  * Time statistics collected by a stopwatch.
@@ -43,31 +45,22 @@ trait StopwatchStatistic {
   /** Returns the average amount of time taken to complete one invocation of
    *  this operation since the beginning of this measurement (in nanoseconds).
    */
-  def averageTime: Long
+  def averageTime: Duration
 
   /** Returns the total amount of time spent by threads inside the stopwatch (in nanoseconds). */
-  def totalTime: Long
+  def totalTime: FiniteDuration
 
   /** Returns the minimum amount of time spent by any given thread inside the stopwatch (in nanoseconds). */
-  def minTime: Long
+  def minTime: Duration
 
   /** Returns the maximum amount of time spent by any given thread inside the stopwatch (in nanoseconds). */
-  def maxTime: Long
+  def maxTime: Duration
 
-  /** Returns the range used for recording execution time distribution */
-  def range: StopwatchRange
-
-  /** Returns execution time distribution over the defined range. */
-  def distribution: Seq[Long]
-
-  /** Returns the number of hits with execution time under range. */
-  def hitsUnderRange: Long
-
-  /** Returns the number of hits with execution time over range. */
-  def hitsOverRange: Long
+  /** Returns the percentiles */
+  def percentiles: Seq[Percentile]
 
   /** Returns the standard deviation of time for each event (in nanoseconds). */
-  def standardDeviationTime: Long
+  def standardDeviationTime: Duration
 
   /** Returns current number of threads inside the stopwatch section */
   def currentThreads: Long

@@ -14,25 +14,12 @@
  * limitations under the License.
  */
 
-package stopwatch.web
+package stopwatch2.web
 
-import stopwatch.Stopwatch
-import stopwatch.StopwatchGroup
-import stopwatch.StopwatchRange
-import stopwatch.StopwatchStatistic
-import stopwatch.TimeUnit
-import stopwatch.TimeUnit._
+import stopwatch2._
 
-import java.io.BufferedInputStream
-import java.io.BufferedOutputStream
-import java.io.BufferedReader
-import java.io.InputStream
-import java.io.InputStreamReader
-import java.io.OutputStream
-
-import java.net.Socket
-import java.net.ServerSocket
-import java.net.URLDecoder
+import java.io._
+import java.net._
 
 import scala.xml._
 
@@ -159,7 +146,7 @@ class Server extends WebServer with ResourceHandler {
           // setup ul.tabs to work as tabs for each div directly under div.panes
           //$('ul.tabs').tabs('div.panes > div', {effect: 'fade', fadeOutSpeed: 400});
 
-          /* Inline sparklines take their values from the contents of the tag */
+          // Inline sparklines take their values from the contents of the tag
           $('.inlinesparkline').sparkline('html', {type: 'bar'});
 
           // apply jQuery checkbox styling
@@ -256,8 +243,8 @@ class Server extends WebServer with ResourceHandler {
         <th scope="col" colspan="5">Time</th> ++
         <th scope="col" colspan="3">Threads</th> ++
         <th scope="col" colspan="2">Access</th> ++ {
-          if (g.range ne null) {
-            <th scope="col" rowspan="2">Distribution</th>
+          if (g.percentiles ne null) {
+            <th scope="col" rowspan="2">Percentiles</th>
           } else NodeSeq.Empty
         } ++
         <th scope="col" rowspan="2">Enabled</th>
@@ -327,8 +314,6 @@ class Server extends WebServer with ResourceHandler {
       time.map(dateFormat.format(_)) getOrElse "N/A"
     }
 
-    implicit def timeToLong(t: TimeUnit) = t.toNanos
-
     val millis = 1000000
 
     val reset = (
@@ -351,7 +336,9 @@ class Server extends WebServer with ResourceHandler {
       <td>{s.maxThreads}</td> ++
       <td>{formatTime(s.firstAccessTime)}</td> ++
       <td>{formatTime(s.lastAccessTime)}</td> ++ {
-        if (s.range ne null) {
+        /*
+
+        if (g.percentiles.nonEmpty) {
           <td><a href={"/distribution/%s/%s" format (encode(g.name), encode(s.name))}>
             <span class="inlinesparkline"> {
               val newRange = {
@@ -367,7 +354,10 @@ class Server extends WebServer with ResourceHandler {
               newDist mkString ","
             } </span>
           </a></td>
-        } else NodeSeq.Empty } ++
+        } else
+        */
+
+        NodeSeq.Empty } ++
       <td>
         <div class="stopwatchSwitch">
           <input type="checkbox" name={g.name+"~"+s.name}
@@ -390,8 +380,8 @@ class Server extends WebServer with ResourceHandler {
       val s = group.snapshot(stopwatch)
 
       import s._
-      implicit def timeToLong(t: TimeUnit) = t.toNanos
 
+      /*
       val step: Long = (range.higherBound - range.lowerBound) / 10
       val xmin: Long = range.lowerBound - step
       val xmax: Long = range.higherBound + step
@@ -421,6 +411,8 @@ class Server extends WebServer with ResourceHandler {
       val ymin = 0
       val ymax = ((s.distribution.reduceRight((a:Long, b:Long) => a.max(b))+10)/10*10) // we want multiple of 10
       val yticks = StopwatchRange(0 nanos, ymax nanos, (ymax/10) nanos).toList mkString ("[", ",", "]")
+
+      */
 
       val xhtml = <html>
         <head>
@@ -472,7 +464,10 @@ class Server extends WebServer with ResourceHandler {
           </div>
         </body>
       </html>
+
+
       val result = ( xhtml.toString
+          /*
         .replaceFirst("""\$data""", data)
         .replaceFirst("""\$xticks""", xticks)
         .replaceFirst("""\$xmin""", xmin.toString)
@@ -480,39 +475,11 @@ class Server extends WebServer with ResourceHandler {
         .replaceFirst("""\$yticks""", yticks)
         .replaceFirst("""\$ymin""", ymin.toString)
         .replaceFirst("""\$ymax""", ymax.toString)
+        */
       )
 
       response.content = result
+
     }
-  }
-}
-
-private[web] object RangeUtils {
-
-  /** Re-scale: Convert distribution values from one range to another range. */
-  def rescale(from: StopwatchRange, to: StopwatchRange, values: Seq[Long]): List[Long] = {
-    implicit def timeToLong(t: TimeUnit) = t.toNanos
-
-    def hitsBetween(low: Long, high: Long): Long = {
-      val start = from.interval(low) max 0
-      val end = from.interval(high-1) min ((from.spread/from.step).toInt-1)
-
-      var hits = 0L
-      var i = start
-      while (i <= end) {
-        hits += values(i)
-        i += 1
-      }
-      hits
-    }
-
-    var result = List[Long]()
-    var i: Long = to.lowerBound
-    while (i < to.higherBound) {
-      val hits = hitsBetween(i, i+to.step)
-      result ::= hits
-      i += (to.step: Long)
-    }
-    result.reverse
   }
 }

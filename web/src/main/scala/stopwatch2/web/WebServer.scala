@@ -14,31 +14,18 @@
  * limitations under the License.
  */
 
-package stopwatch.web
+package stopwatch2.web
 
-import java.io.BufferedInputStream
-import java.io.BufferedOutputStream
-import java.io.BufferedReader
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.InputStream
-import java.io.InputStreamReader
-import java.io.OutputStream
-import java.io.OutputStreamWriter
-import java.io.Writer
+import java.io.{Console => _, _}
 
 import java.util.concurrent.Executor
 
-import java.net.Socket
-import java.net.ServerSocket
-import java.net.URL
-import java.net.URLDecoder
-import java.net.URLEncoder
+import java.net._
 
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 
-import stopwatch.StopwatchGroup
+import stopwatch2._
 
 /**
  * Small embedded webserver that implements a subset of HTTP 1.0 protocol
