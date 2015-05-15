@@ -1,0 +1,32 @@
+<ivy-module version="1.1">
+
+    <info organisation="stopwatch" module="stopwatch2_2.10"/>
+
+    <configurations>
+      <conf name="default" description="core dependencies needed at compile-time and runtime" />
+      <conf name="compile" visibility="private" description="additional dependencies needed only at build-time"/>
+      <conf name="test" visibility="private" description="additional dependencies needed only at test-time"/>
+      <conf name="sources" description="sources"/>
+      <conf name="javadocs" description="javadocs"/>
+      <conf name="eclipse" extends="default,test,sources" visibility="private" description="single conf for importing into Eclispe via IvyDE"/>
+    </configurations>
+
+    <publications>
+      <artifact conf="default"/>
+    </publications>
+
+    <dependencies defaultconfmapping="sources->sources();%->default;" defaultconf="default,sources">
+      
+      <!-- compile -->
+      <dependency org="org.scala-lang" name="scala-compiler" rev="2.10.2" conf="compile" />
+      <dependency org="org.scala-lang" name="scala-library" rev="2.10.2" />
+
+      <!-- test -->
+      <dependency org="junit" name="junit" rev="4.8.2" conf="test"/>
+      <dependency org="org.scalatest" name="scalatest_2.10" rev="2.1.0" conf="test"/>
+
+      <exclude org="scala" module="scala" conf="eclipse" />
+
+    </dependencies>
+
+</ivy-module>
