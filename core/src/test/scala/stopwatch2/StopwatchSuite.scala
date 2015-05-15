@@ -84,7 +84,7 @@ class StopwatchSuite extends FunSuite with Matchers {
 
     stat.standardDeviationTime shouldBe Duration.Zero
 
-    stat.percentiles.length shouldBe 12
+    stat.percentiles.length shouldBe 13
 
     stat.currentThreads shouldBe 0
 
