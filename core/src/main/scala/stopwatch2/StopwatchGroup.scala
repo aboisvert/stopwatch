@@ -42,7 +42,7 @@ class StopwatchGroup(val name: String) {
   @volatile private var _listeners: List[StopwatchStatistic => Unit] = Nil
 
   /** Percentiles to track. */
-  @volatile var percentiles: Array[Float] = Array(0.1f, 1.0f, 10.0f, 20.0f, 30.0f, 40.0f, 50.0f, 60.0f, 70.0f, 90.0f, 99.0f, 99.9f)
+  @volatile var percentiles: Array[Float] = Array(0.1f, 1.0f, 10.0f, 20.0f, 30.0f, 40.0f, 50.0f, 60.0f, 70.0f, 80.0f, 90.0f, 99.0f, 99.9f)
 
   /** Measure the elapsed time spent during execution of the provided function. */
   def apply[T](name: String)(f: => T): T = {
