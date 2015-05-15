@@ -31,7 +31,7 @@ define "stopwatch2_#{Buildr::Scala.version}" do
   define "core" do
     package(:jar, :id => "stopwatch_#{Buildr::Scala.version}")
 
-    run.using :main => ["stopwatch.StopwatchPerformanceSuiteRunner", "-t"],
+    run.using :main => ["stopwatch2.StopwatchPerformanceSuiteRunner", "-t"],
               :java_args => ["-server"]
   end
 
@@ -39,13 +39,13 @@ define "stopwatch2_#{Buildr::Scala.version}" do
     compile.with projects("core")
     package(:jar)
 
-    run.using :main => "stopwatch.web.SampleServer"
+    run.using :main => "stopwatch2.web.SampleServer"
   end
 
   doc.using :scaladoc
   doc.from projects('core', 'web')
 end
 
-task "perf" => "stopwatch:core:perf"
-task "sample" => "stopwatch:web:sample"
+task "perf" => "stopwatch2_#{Buildr::Scala.version}:core:run"
+task "sample" => "stopwatch2_#{Buildr::Scala.version}:web:run"
 

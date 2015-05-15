@@ -1,0 +1,5 @@
+#scala.specs2: 1.12.3
+scala.version: 2.10.1
+scala.test: org.scalatest:scalatest_2.10:jar:2.2.4
+scala.check: org.scalacheck:scalacheck_2.10:jar:1.12.2
+

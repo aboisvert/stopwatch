@@ -26,12 +26,12 @@ See <http://buildr.apache.org/installing.html> for instructions on installing Bu
 
 ### Target platform ###
 
-* Scala 2.7.4+ / 2.8+  (source compatible)
-* JVM 1.5+
+* Scala 2.10+ 
+* JVM 1.6+
 
 ### License ###
 
-Copyright (C) 2009-2010 by Alex Boisvert.
+Copyright (C) 2009-2015 by Alex Boisvert.
 
 Stopwatch is is licensed under the terms of the Apache Software License v2.0.
 <http://www.apache.org/licenses/LICENSE-2.0.html>
